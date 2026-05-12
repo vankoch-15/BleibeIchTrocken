@@ -8,13 +8,121 @@
     <!-- iOS Web-App (Standalone) -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Trocken?" />
+    <meta name="apple-mobile-web-app-title" content="BleibeIchTrocken" />
 
-    <!-- Apple Touch Icon (vektorbasiertes SVG als Data-URI, 180x180, Retina) -->
-    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%231a237e'/%3E%3Cstop offset='100%25' stop-color='%23283593'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='180' height='180' rx='32' fill='url(%23bg)'/%3E%3Ccircle cx='64' cy='68' r='26' fill='%23ffd54f'/%3E%3Cg stroke='%23ffd54f' stroke-width='3.5' stroke-linecap='round'%3E%3Cline x1='64' y1='24' x2='64' y2='32'/%3E%3Cline x1='64' y1='104' x2='64' y2='112'/%3E%3Cline x1='32' y1='68' x2='40' y2='68'/%3E%3Cline x1='88' y1='68' x2='96' y2='68'/%3E%3Cline x1='42' y1='46' x2='48' y2='52'/%3E%3Cline x1='80' y1='84' x2='86' y2='90'/%3E%3Cline x1='80' y1='46' x2='86' y2='52'/%3E%3Cline x1='42' y1='90' x2='48' y2='84'/%3E%3C/g%3E%3Cpath d='M92 112 Q90 102 100 100 Q102 90 114 92 Q118 80 132 86 Q140 76 148 88 Q156 82 160 94 Q162 102 155 106 L100 108 Q92 108 92 112Z' fill='%2378909c'/%3E%3Cg stroke='%2342a5f5' stroke-width='3' stroke-linecap='round' opacity='0.7'%3E%3Cline x1='122' y1='102' x2='122' y2='92'/%3E%3Cline x1='128' y1='102' x2='128' y2='92'/%3E%3Cline x1='134' y1='102' x2='134' y2='92'/%3E%3C/g%3E%3Ctext x='90' y='155' font-family='HelveticaNeue,Helvetica,Arial,sans-serif' font-size='28' font-weight='bold' fill='white' text-anchor='middle'%3E%3F%3C/text%3E%3C/svg%3E" />
+    <!-- Apple Touch Icon – wird per JavaScript als PNG aus Canvas generiert -->
+    <link rel="apple-touch-icon" sizes="180x180" id="appleTouchIcon" href="" />
 
     <!-- Safari-Theme-Farbe (Statusleiste) -->
     <meta name="theme-color" content="#1a237e" />
+
+    <!-- Apple Touch Icon als echtes PNG via Canvas generieren (iOS-kompatibel) -->
+    <script>
+        (function() {
+            try {
+                var c = document.createElement('canvas');
+                c.width = 180;
+                c.height = 180;
+                var ctx = c.getContext('2d');
+
+                // Hintergrund: abgerundetes Rechteck mit Farbverlauf
+                var grd = ctx.createLinearGradient(0, 0, 180, 180);
+                grd.addColorStop(0, '#1a237e');
+                grd.addColorStop(1, '#283593');
+
+                var r = 32;
+                ctx.beginPath();
+                ctx.moveTo(r, 0);
+                ctx.lineTo(180 - r, 0);
+                ctx.quadraticCurveTo(180, 0, 180, r);
+                ctx.lineTo(180, 180 - r);
+                ctx.quadraticCurveTo(180, 180, 180 - r, 180);
+                ctx.lineTo(r, 180);
+                ctx.quadraticCurveTo(0, 180, 0, 180 - r);
+                ctx.lineTo(0, r);
+                ctx.quadraticCurveTo(0, 0, r, 0);
+                ctx.closePath();
+                ctx.fillStyle = grd;
+                ctx.fill();
+
+                // Sonne
+                var sx = 64, sy = 68, sr = 26;
+                ctx.beginPath();
+                ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffd54f';
+                ctx.fill();
+
+                // Sonnenstrahlen
+                ctx.strokeStyle = '#ffd54f';
+                ctx.lineWidth = 3.5;
+                ctx.lineCap = 'round';
+                var rays = [
+                    [sx, sy - sr - 6, sx, sy - sr - 14],
+                    [sx, sy + sr + 6, sx, sy + sr + 14],
+                    [sx - sr - 6, sy, sx - sr - 14, sy],
+                    [sx + sr + 6, sy, sx + sr + 14, sy],
+                    [sx - sr*0.7 - 5, sy - sr*0.7 - 5, sx - sr*0.7 - 11, sy - sr*0.7 - 11],
+                    [sx + sr*0.7 + 5, sy + sr*0.7 + 5, sx + sr*0.7 + 11, sy + sr*0.7 + 11],
+                    [sx + sr*0.7 + 5, sy - sr*0.7 - 5, sx + sr*0.7 + 11, sy - sr*0.7 - 11],
+                    [sx - sr*0.7 - 5, sy + sr*0.7 + 5, sx - sr*0.7 - 11, sy + sr*0.7 + 11],
+                ];
+                for (var i = 0; i < rays.length; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(rays[i][0], rays[i][1]);
+                    ctx.lineTo(rays[i][2], rays[i][3]);
+                    ctx.stroke();
+                }
+
+                // Regenwolke
+                ctx.fillStyle = '#78909c';
+                ctx.beginPath();
+                ctx.moveTo(92, 112);
+                ctx.quadraticCurveTo(90, 102, 100, 100);
+                ctx.quadraticCurveTo(102, 90, 114, 92);
+                ctx.quadraticCurveTo(118, 80, 132, 86);
+                ctx.quadraticCurveTo(140, 76, 148, 88);
+                ctx.quadraticCurveTo(156, 82, 160, 94);
+                ctx.quadraticCurveTo(162, 102, 155, 106);
+                ctx.lineTo(100, 108);
+                ctx.quadraticCurveTo(92, 108, 92, 112);
+                ctx.fill();
+
+                // Regentropfen
+                ctx.strokeStyle = '#42a5f5';
+                ctx.lineWidth = 2.5;
+                ctx.lineCap = 'round';
+                ctx.globalAlpha = 0.7;
+                var drops = [
+                    [126, 102, 126, 90],
+                    [132, 102, 132, 90],
+                    [138, 102, 138, 90],
+                ];
+                for (var j = 0; j < drops.length; j++) {
+                    ctx.beginPath();
+                    ctx.moveTo(drops[j][0], drops[j][1]);
+                    ctx.lineTo(drops[j][2], drops[j][3]);
+                    ctx.stroke();
+                }
+                ctx.globalAlpha = 1.0;
+
+                // "?"-Zeichen
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 28px HelveticaNeue, Helvetica, Arial, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('?', 90, 150);
+
+                // Als PNG Data-URI setzen
+                var link = document.getElementById('appleTouchIcon');
+                if (link) {
+                    link.href = c.toDataURL('image/png');
+                }
+            } catch(e) {
+                console.log('Icon-Generierung fehlgeschlagen:', e);
+            }
+        })();
+    </script>
+
     <style>
         * {
             margin: 0;
@@ -836,9 +944,31 @@
         let currentSpeed = 5;
 
         // ============================================================
-        // 1. Geocoding via Nominatim
+        // 1. Geocoding via Nominatim + Cache
         // ============================================================
+
+        // Cache-Objekt: Speichert bereits abgefragte Adressen (Key = normalisierte Adresse)
+        const geocodeCache = {};
+
+        /**
+         * Normalisiert einen Adress-String für den Cache-Key:
+         *  - trim
+         *  - Kleinschreibung
+         *  - reduziert überflüssige Leerzeichen
+         */
+        function normalizeAddress(address) {
+            return address.trim().toLowerCase().replace(/\s+/g, ' ');
+        }
+
         async function geocode(address) {
+            const key = normalizeAddress(address);
+
+            // 1. Cache-Check: sofort zurückgeben, falls bereits vorhanden
+            if (geocodeCache[key]) {
+                return geocodeCache[key];
+            }
+
+            // 2. Netzwerk-Anfrage (nur bei Cache-Miss)
             const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
             const resp = await fetch(url, {
                 headers: { 'User-Agent': 'BleibeIchTrocken/1.0' }
@@ -846,11 +976,17 @@
             if (!resp.ok) throw new Error(`Nominatim-Fehler: ${resp.status}`);
             const data = await resp.json();
             if (!data.length) throw new Error(`Konnte "${address}" nicht finden.`);
-            return {
+
+            const result = {
                 lat: parseFloat(data[0].lat),
                 lon: parseFloat(data[0].lon),
                 displayName: data[0].display_name,
             };
+
+            // 3. Ergebnis ins Cache speichern
+            geocodeCache[key] = result;
+
+            return result;
         }
 
         // ============================================================
@@ -1169,9 +1305,8 @@
                 return;
             }
 
-            // In localStorage speichern, damit sie beim nächsten Laden wieder da sind
-            localStorage.setItem('startLocation', startStr);
-            localStorage.setItem('zielLocation', zielStr);
+            // Adressen für den nächsten App-Start speichern
+            saveCurrentAddresses();
 
             hideError();
             DOM.resultCard.classList.remove('visible');
@@ -1540,6 +1675,18 @@
         // ============================================================
         // 7. Toggle-Buttons (Radio-Button-Verhalten)
         // ============================================================
+
+        /**
+         * Speichert die aktuellen Adressen aus den Eingabefeldern in localStorage.
+         * Wird beim Umschalten des Verkehrsmittels und beim Checken aufgerufen.
+         */
+        function saveCurrentAddresses() {
+            const startStr = DOM.start.value.trim();
+            const zielStr = DOM.ziel.value.trim();
+            if (startStr) localStorage.setItem('startLocation', startStr);
+            if (zielStr) localStorage.setItem('zielLocation', zielStr);
+        }
+
         function setMode(btn) {
             // Alle deaktivieren
             DOM.toggleBtns.forEach(b => b.classList.remove('active'));
@@ -1548,6 +1695,9 @@
             // Globale Variablen setzen
             currentMode = btn.dataset.mode;
             currentSpeed = parseFloat(btn.dataset.speed);
+
+            // Adressen sofort speichern (damit sie auch ohne Check-Klick erhalten bleiben)
+            saveCurrentAddresses();
         }
 
         DOM.toggleBtns.forEach(btn => {
@@ -1611,6 +1761,53 @@
             });
         }
 
+        // ============================================================
+        // 8b. History-Vorschläge aus localStorage
+        // ============================================================
+
+        /**
+         * Liefert die letzten maxCount gespeicherten Adressen aus localStorage,
+         * sortiert nach Aktualität (neueste zuerst).
+         * Berücksichtigt sowohl startLocation als auch zielLocation.
+         */
+        function getRecentAddresses(maxCount = 3) {
+            const saved = new Set();
+            const start = localStorage.getItem('startLocation');
+            const ziel = localStorage.getItem('zielLocation');
+            if (start && start.trim()) saved.add(start.trim());
+            if (ziel && ziel.trim()) saved.add(ziel.trim());
+            // In Zukunft könnten hier weitere Keys ergänzt werden, falls
+            // ein Verlauf mit mehr als 2 Einträgen gewünscht ist.
+            return Array.from(saved).slice(0, maxCount);
+        }
+
+        /**
+         * Zeigt die History-Vorschläge (letzte Adressen) im Dropdown an.
+         */
+        function showHistorySuggestions(inputEl, dropdownEl) {
+            const history = getRecentAddresses(3);
+            if (history.length === 0) return;
+
+            dropdownEl.innerHTML = '';
+            // Überschrift "Zuletzt verwendet"
+            const header = document.createElement('div');
+            header.style.cssText = 'padding:0.5rem 1rem 0.25rem;font-size:0.7rem;color:#999;text-transform:uppercase;letter-spacing:0.04em;font-weight:600;border-bottom:1px solid #f0f0f0;';
+            header.textContent = '⏳ Zuletzt verwendet';
+            dropdownEl.appendChild(header);
+
+            history.forEach(addr => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.innerHTML = `${addr} <span class="suggestion-type">Verlauf</span>`;
+                div.addEventListener('click', () => {
+                    inputEl.value = addr;
+                    dropdownEl.classList.remove('visible');
+                });
+                dropdownEl.appendChild(div);
+            });
+            dropdownEl.classList.add('visible');
+        }
+
         async function fetchSuggestions(query) {
             if (query.length < 3) return [];
             const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=6&addressdetails=1`;
@@ -1668,6 +1865,11 @@
             inputEl.addEventListener('input', () => {
                 clearTimeout(suggestTimer);
                 const val = inputEl.value.trim();
+                if (val.length === 0) {
+                    // Wenn komplett gelöscht → History-Vorschläge zeigen
+                    showHistorySuggestions(inputEl, dropdownEl);
+                    return;
+                }
                 if (val.length < 3) {
                     dropdownEl.classList.remove('visible');
                     return;
@@ -1675,12 +1877,16 @@
                 suggestTimer = setTimeout(async () => {
                     const data = await fetchSuggestions(val);
                     renderSuggestions(inputEl, dropdownEl, data);
-                }, 300);
+                }, 250);
             });
 
             inputEl.addEventListener('focus', () => {
-                // Nur anzeigen, wenn schon Vorschläge da sind
-                if (dropdownEl.children.length > 0) {
+                const val = inputEl.value.trim();
+                if (val.length === 0) {
+                    // Feld ist leer → History-Vorschläge anzeigen
+                    showHistorySuggestions(inputEl, dropdownEl);
+                } else if (dropdownEl.children.length > 0) {
+                    // Bereits Vorschläge vorhanden → Dropdown öffnen
                     dropdownEl.classList.add('visible');
                 }
             });
