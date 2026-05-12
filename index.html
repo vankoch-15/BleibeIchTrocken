@@ -57,10 +57,74 @@
 
         .form-group {
             margin-bottom: 1.25rem;
+            position: relative;
         }
 
         .form-group:last-child {
             margin-bottom: 0;
+        }
+
+        .autocomplete-wrapper {
+            position: relative;
+        }
+
+        .suggestions-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: #1a237e;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            max-height: 220px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .suggestions-dropdown.visible {
+            display: block;
+        }
+
+        .suggestion-item {
+            padding: 0.65rem 1rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #b0bec5;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            transition: background 0.15s;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-item:hover,
+        .suggestion-item.highlighted {
+            background: rgba(66, 165, 245, 0.2);
+            color: #fff;
+        }
+
+        .suggestion-item .suggestion-type {
+            font-size: 0.65rem;
+            color: #42a5f5;
+            margin-left: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .suggestions-dropdown::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .suggestions-dropdown::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .suggestions-dropdown::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
         }
 
         label {
@@ -381,11 +445,17 @@
         <div class="card">
             <div class="form-group">
                 <label for="start">Startort</label>
-                <input type="text" id="start" placeholder="z. B. Berlin Hauptbahnhof" value="Berlin Hauptbahnhof" />
+                <div class="autocomplete-wrapper">
+                    <input type="text" id="start" placeholder="z. B. Berlin Hauptbahnhof" value="Berlin Hauptbahnhof" autocomplete="off" />
+                    <div class="suggestions-dropdown" id="startSuggestions"></div>
+                </div>
             </div>
             <div class="form-group">
                 <label for="ziel">Zielort</label>
-                <input type="text" id="ziel" placeholder="z. B. Brandenburg Tor" value="Brandenburger Tor, Berlin" />
+                <div class="autocomplete-wrapper">
+                    <input type="text" id="ziel" placeholder="z. B. Brandenburger Tor" value="Brandenburger Tor, Berlin" autocomplete="off" />
+                    <div class="suggestions-dropdown" id="zielSuggestions"></div>
+                </div>
             </div>
             <div class="form-group">
                 <label>Verkehrsmittel</label>
@@ -442,6 +512,8 @@
             detailsGrid: document.getElementById('detailsGrid'),
             errorMsg: document.getElementById('errorMsg'),
             toggleBtns: document.querySelectorAll('.toggle-btn'),
+            startSuggestions: document.getElementById('startSuggestions'),
+            zielSuggestions: document.getElementById('zielSuggestions'),
         };
 
         // Globale Variable: aktuell gewähltes Verkehrsmittel
@@ -754,7 +826,132 @@
         })();
 
         // ============================================================
-        // 8. Event Listener
+        // 8. Autocomplete / Suggestions
+        // ============================================================
+
+        let suggestTimer = null;
+
+        async function fetchSuggestions(query) {
+            if (query.length < 2) return [];
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=6&addressdetails=1`;
+            const resp = await fetch(url, {
+                headers: { 'User-Agent': 'BleibeIchTrocken/1.0' }
+            });
+            if (!resp.ok) return [];
+            return resp.json();
+        }
+
+        function getTypeLabel(item) {
+            const type = item.type || item.addresstype || '';
+            switch (type) {
+                case 'house_number': return 'Hausnr.';
+                case 'street': return 'Straße';
+                case 'city': return 'Stadt';
+                case 'town': return 'Stadt';
+                case 'village': return 'Dorf';
+                case 'state': return 'Bundesland';
+                case 'country': return 'Land';
+                case 'amenity': return 'Ort';
+                case 'railway': return 'Bahnhof';
+                case 'tourism': return 'Tourismus';
+                default: return type;
+            }
+        }
+
+        function renderSuggestions(inputEl, dropdownEl, data) {
+            dropdownEl.innerHTML = '';
+            if (!data || data.length === 0) {
+                dropdownEl.classList.remove('visible');
+                return;
+            }
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                const display = item.display_name.split(',')[0] || item.display_name;
+                div.innerHTML = `${display} <span class="suggestion-type">${getTypeLabel(item)}</span>`;
+                div.addEventListener('click', () => {
+                    inputEl.value = item.display_name;
+                    dropdownEl.classList.remove('visible');
+                    // Nach Auswahl direkt prüfen
+                    checkWeather();
+                });
+                dropdownEl.appendChild(div);
+            });
+            dropdownEl.classList.add('visible');
+        }
+
+        function hideAllDropdowns() {
+            DOM.startSuggestions.classList.remove('visible');
+            DOM.zielSuggestions.classList.remove('visible');
+        }
+
+        function setupAutocomplete(inputEl, dropdownEl) {
+            inputEl.addEventListener('input', () => {
+                clearTimeout(suggestTimer);
+                const val = inputEl.value.trim();
+                if (val.length < 2) {
+                    dropdownEl.classList.remove('visible');
+                    return;
+                }
+                suggestTimer = setTimeout(async () => {
+                    const data = await fetchSuggestions(val);
+                    renderSuggestions(inputEl, dropdownEl, data);
+                }, 250);
+            });
+
+            inputEl.addEventListener('focus', () => {
+                // Nur anzeigen, wenn schon Vorschläge da sind
+                if (dropdownEl.children.length > 0) {
+                    dropdownEl.classList.add('visible');
+                }
+            });
+
+            inputEl.addEventListener('blur', () => {
+                // Verzögert schließen, damit Klick auf Item registriert wird
+                setTimeout(() => dropdownEl.classList.remove('visible'), 200);
+            });
+
+            // Tastatur-Navigation im Dropdown
+            inputEl.addEventListener('keydown', (e) => {
+                const items = dropdownEl.querySelectorAll('.suggestion-item');
+                if (!items.length) return;
+
+                const activeIdx = Array.from(items).findIndex(el => el.classList.contains('highlighted'));
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const next = activeIdx < items.length - 1 ? activeIdx + 1 : 0;
+                    items.forEach(el => el.classList.remove('highlighted'));
+                    items[next].classList.add('highlighted');
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const prev = activeIdx > 0 ? activeIdx - 1 : items.length - 1;
+                    items.forEach(el => el.classList.remove('highlighted'));
+                    items[prev].classList.add('highlighted');
+                } else if (e.key === 'Enter') {
+                    if (activeIdx >= 0) {
+                        e.preventDefault();
+                        items[activeIdx].click();
+                    }
+                } else if (e.key === 'Escape') {
+                    dropdownEl.classList.remove('visible');
+                }
+            });
+        }
+
+        // Autocomplete für beide Felder aktivieren
+        setupAutocomplete(DOM.start, DOM.startSuggestions);
+        setupAutocomplete(DOM.ziel, DOM.zielSuggestions);
+
+        // Dropdown schließen bei Klick außerhalb
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.autocomplete-wrapper')) {
+                hideAllDropdowns();
+            }
+        });
+
+        // ============================================================
+        // 9. Event Listener
         // ============================================================
         DOM.checkBtn.addEventListener('click', checkWeather);
 
