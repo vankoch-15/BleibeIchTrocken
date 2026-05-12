@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bleibe ich trocken?</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #0c1445 0%, #1a237e 50%, #283593 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem 1rem;
+            color: #e0e0e0;
+        }
+
+        .app-container {
+            max-width: 700px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, #64b5f6, #42a5f5, #1e88e5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #90caf9;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #90caf9;
+            margin-bottom: 0.4rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        input:focus, select:focus {
+            border-color: #42a5f5;
+            box-shadow: 0 0 0 3px rgba(66, 165, 245, 0.25);
+        }
+
+        .toggle-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+            text-align: center;
+            outline: none;
+        }
+
+        .toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #fff;
+        }
+
+        .toggle-btn.active {
+            background: #007bff;
+            border-color: #007bff;
+            color: #fff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.85rem;
+            background: linear-gradient(135deg, #42a5f5, #1e88e5);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.2s;
+            letter-spacing: 0.02em;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(66, 165, 245, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-card {
+            display: none;
+        }
+
+        .result-card.visible {
+            display: block;
+        }
+
+        .verdict {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            padding: 1rem 0 0.5rem 0;
+            border-radius: 10px;
+        }
+
+        .verdict.safe {
+            color: #66bb6a;
+        }
+
+        .verdict.warning {
+            color: #ef5350;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .sub-verdict {
+            text-align: center;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            color: #b0bec5;
+        }
+
+        .timeline {
+            margin: 1.5rem 0;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+
+        .timeline-track {
+            position: relative;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+            margin: 2rem 0 0.5rem 0;
+        }
+
+        .timeline-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #66bb6a, #ffa726, #ef5350);
+            border-radius: 3px;
+            transition: width 0.6s ease;
+            width: 0%;
+        }
+
+        .timeline-points {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-top: -14px;
+        }
+
+        .timeline-point {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            flex: 1;
+        }
+
+        .point-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            background: #1a237e;
+            transition: all 0.4s ease;
+            z-index: 2;
+        }
+
+        .point-dot.dry {
+            border-color: #66bb6a;
+            background: #66bb6a;
+        }
+
+        .point-dot.wet {
+            border-color: #ef5350;
+            background: #ef5350;
+            box-shadow: 0 0 12px rgba(239, 83, 80, 0.6);
+        }
+
+        .point-dot.warning-dot {
+            border-color: #ffa726;
+            background: #ffa726;
+        }
+
+        .point-label {
+            font-size: 0.7rem;
+            margin-top: 0.4rem;
+            color: #90caf9;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .point-weather {
+            font-size: 0.75rem;
+            margin-top: 0.15rem;
+            color: #b0bec5;
+            text-align: center;
+        }
+
+        .point-time {
+            font-size: 0.65rem;
+            color: #78909c;
+            text-align: center;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.75rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .detail-item {
+            text-align: center;
+        }
+
+        .detail-item .label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #78909c;
+        }
+
+        .detail-item .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            margin-top: 0.15rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .loading.visible {
+            display: block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 36px;
+            height: 36px;
+            border: 4px solid rgba(255, 255, 255, 0.15);
+            border-top-color: #42a5f5;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 0.5rem;
+            color: #90caf9;
+            font-size: 0.9rem;
+        }
+
+        .error-msg {
+            color: #ef5350;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .error-msg.visible {
+            display: block;
+        }
+
+        .rain-icon {
+            font-size: 1.2rem;
+            margin-left: 0.3rem;
+        }
+
+        .weather-emoji {
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 500px) {
+            body {
+                padding: 1rem 0.75rem;
+            }
+            h1 {
+                font-size: 1.6rem;
+            }
+            .card {
+                padding: 1rem;
+            }
+            .verdict {
+                font-size: 1.2rem;
+            }
+            .details-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <h1>🌤️ Bleibe ich trocken?</h1>
+        <p class="subtitle">Finde heraus, ob dich unterwegs Regen erwischt</p>
+
+        <!-- Eingabe -->
+        <div class="card">
+            <div class="form-group">
+                <label for="start">Startort</label>
+                <input type="text" id="start" placeholder="z. B. Berlin Hauptbahnhof" value="Berlin Hauptbahnhof" />
+            </div>
+            <div class="form-group">
+                <label for="ziel">Zielort</label>
+                <input type="text" id="ziel" placeholder="z. B. Brandenburg Tor" value="Brandenburger Tor, Berlin" />
+            </div>
+            <div class="form-group">
+                <label>Verkehrsmittel</label>
+                <div class="toggle-group">
+                    <button type="button" class="toggle-btn active" data-mode="walking" data-speed="5">
+                        🚶 Gehen (ca. 5 km/h)
+                    </button>
+                    <button type="button" class="toggle-btn" data-mode="bicycle" data-speed="15">
+                        🚴 Fahrrad (ca. 15 km/h)
+                    </button>
+                </div>
+            </div>
+            <button class="btn" id="checkBtn">🌧️ Checken – Bleibe ich trocken?</button>
+            <div class="error-msg" id="errorMsg"></div>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div class="loading-text">Berechne Route und checke Wetter...</div>
+        </div>
+
+        <!-- Ergebnis -->
+        <div class="card result-card" id="resultCard">
+            <div class="verdict" id="verdict"></div>
+            <div class="sub-verdict" id="subVerdict"></div>
+
+            <div class="timeline">
+                <div class="timeline-track">
+                    <div class="timeline-fill" id="timelineFill"></div>
+                </div>
+                <div class="timeline-points" id="timelinePoints"></div>
+            </div>
+
+            <div class="details-grid" id="detailsGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // App: "Bleibe ich trocken?" – Single-Page-Anwendung
+        // ============================================================
+
+        const DOM = {
+            start: document.getElementById('start'),
+            ziel: document.getElementById('ziel'),
+            checkBtn: document.getElementById('checkBtn'),
+            loading: document.getElementById('loading'),
+            resultCard: document.getElementById('resultCard'),
+            verdict: document.getElementById('verdict'),
+            subVerdict: document.getElementById('subVerdict'),
+            timelinePoints: document.getElementById('timelinePoints'),
+            timelineFill: document.getElementById('timelineFill'),
+            detailsGrid: document.getElementById('detailsGrid'),
+            errorMsg: document.getElementById('errorMsg'),
+            toggleBtns: document.querySelectorAll('.toggle-btn'),
+        };
+
+        // Globale Variable: aktuell gewähltes Verkehrsmittel
+        let currentMode = 'walking';
+        let currentSpeed = 5;
+
+        // ============================================================
+        // 1. Geocoding via Nominatim
+        // ============================================================
+        async function geocode(address) {
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+            const resp = await fetch(url, {
+                headers: { 'User-Agent': 'BleibeIchTrocken/1.0' }
+            });
+            if (!resp.ok) throw new Error(`Nominatim-Fehler: ${resp.status}`);
+            const data = await resp.json();
+            if (!data.length) throw new Error(`Konnte "${address}" nicht finden.`);
+            return {
+                lat: parseFloat(data[0].lat),
+                lon: parseFloat(data[0].lon),
+                displayName: data[0].display_name,
+            };
+        }
+
+        // ============================================================
+        // 2. Open-Meteo Wetter ohne API-Key
+        // ============================================================
+        async function fetchWeather(lat, lon, targetDate) {
+            // Open-Meteo Forecast API – liefert minütliche Niederschlagsdaten
+            const startHour = targetDate.getUTCHours();
+            const endHour = startHour + 1; // Wir fragen ein 2-Stunden-Fenster ab
+
+            const params = new URLSearchParams({
+                latitude: lat,
+                longitude: lon,
+                hourly: 'precipitation_probability,precipitation',
+                timezone: 'auto',
+                forecast_days: 2,
+            });
+
+            const url = `https://api.open-meteo.com/v1/forecast?${params}`;
+            const resp = await fetch(url);
+            if (!resp.ok) throw new Error(`Open-Meteo-Fehler: ${resp.status}`);
+            const data = await resp.json();
+
+            // Finde den Index, der unserer Zielzeit am nächsten kommt
+            const times = data.hourly.time;
+            const precipProb = data.hourly.precipitation_probability;
+            const precip = data.hourly.precipitation;
+
+            let bestIdx = 0;
+            let bestDiff = Infinity;
+            for (let i = 0; i < times.length; i++) {
+                const t = new Date(times[i]);
+                const diff = Math.abs(t - targetDate);
+                if (diff < bestDiff) {
+                    bestDiff = diff;
+                    bestIdx = i;
+                }
+            }
+
+            return {
+                time: times[bestIdx],
+                precipitation_probability: precipProb ? precipProb[bestIdx] : 0,
+                precipitation: precip ? precip[bestIdx] : 0,
+                willRain: (precip[bestIdx] || 0) > 0,
+            };
+        }
+
+        // ============================================================
+        // 3. Route interpolieren
+        // ============================================================
+        function interpolatePoints(startLat, startLon, endLat, endLon, numPoints = 3) {
+            const points = [];
+            for (let i = 0; i < numPoints; i++) {
+                const fraction = i / (numPoints - 1);
+                points.push({
+                    lat: startLat + (endLat - startLat) * fraction,
+                    lon: startLon + (endLon - startLon) * fraction,
+                    label: i === 0 ? 'Start' : (i === numPoints - 1 ? 'Ziel' : `Punkt ${i + 1}`),
+                });
+            }
+            // Benenne den mittleren Punkt um
+            if (numPoints === 3) {
+                points[1].label = 'Mitte';
+            } else if (numPoints > 2) {
+                const mid = Math.floor(numPoints / 2);
+                points[mid].label = 'Mitte';
+            }
+            return points;
+        }
+
+        // ============================================================
+        // 4. Geschätzte Dauer berechnen (Luftlinie ~) 
+        // ============================================================
+        function haversineDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) ** 2 +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon / 2) ** 2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        function estimateDuration(distKm, speedKmh) {
+            return (distKm / speedKmh) * 3600; // in Sekunden
+        }
+
+        // ============================================================
+        // 5. Hauptlogik
+        // ============================================================
+        async function checkWeather() {
+            const startStr = DOM.start.value.trim();
+            const zielStr = DOM.ziel.value.trim();
+            const mode = currentMode;
+
+            if (!startStr || !zielStr) {
+                showError('Bitte Start- und Zielort eingeben.');
+                return;
+            }
+
+            hideError();
+            DOM.resultCard.classList.remove('visible');
+            DOM.loading.classList.add('visible');
+            DOM.checkBtn.disabled = true;
+
+            try {
+                // 5a. Geocoding
+                const [startGeo, zielGeo] = await Promise.all([
+                    geocode(startStr),
+                    geocode(zielStr),
+                ]);
+
+                // 5b. Distanz & Dauer
+                const distKm = haversineDistance(startGeo.lat, startGeo.lon, zielGeo.lat, zielGeo.lon);
+                const speedKmh = currentSpeed;
+                const totalSeconds = estimateDuration(distKm, speedKmh);
+                const totalMinutes = totalSeconds / 60;
+
+                // 5c. Checkpunkte (Start, Mitte, Ziel)
+                const points = interpolatePoints(startGeo.lat, startGeo.lon, zielGeo.lat, zielGeo.lon, 3);
+
+                // 5d. Zeitversetzte Wetterabfragen
+                const now = new Date();
+                const weatherResults = [];
+
+                for (let i = 0; i < points.length; i++) {
+                    const p = points[i];
+                    const fraction = i / (points.length - 1);
+                    const offsetMs = totalSeconds * fraction * 1000;
+                    const targetTime = new Date(now.getTime() + offsetMs);
+
+                    const weather = await fetchWeather(p.lat, p.lon, targetTime);
+                    weatherResults.push({
+                        ...p,
+                        targetTime,
+                        weather,
+                    });
+                }
+
+                // 5e. Entscheidung
+                const rainAtPoints = weatherResults.filter(w => w.weather.willRain);
+                const hasRain = rainAtPoints.length > 0;
+
+                // 5f. UI rendern
+                renderResult(weatherResults, hasRain, rainAtPoints, distKm, totalMinutes, mode, startGeo, zielGeo);
+
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                DOM.loading.classList.remove('visible');
+                DOM.checkBtn.disabled = false;
+            }
+        }
+
+        // ============================================================
+        // 6. UI Rendering
+        // ============================================================
+        function renderResult(weatherResults, hasRain, rainAtPoints, distKm, totalMinutes, mode, startGeo, zielGeo) {
+            const verdictEl = DOM.verdict;
+            const subVerdictEl = DOM.subVerdict;
+            const timelinePointsEl = DOM.timelinePoints;
+            const timelineFillEl = DOM.timelineFill;
+            const detailsGridEl = DOM.detailsGrid;
+
+            // Verdict
+            if (hasRain) {
+                const msg = rainAtPoints.some(p => p.label === 'Start')
+                    ? 'Du fährst direkt in den Regen! ☔'
+                    : 'Der Regen holt dich ein! ☔';
+                verdictEl.textContent = msg;
+                verdictEl.className = 'verdict warning';
+                subVerdictEl.textContent = `An ${rainAtPoints.length} von ${weatherResults.length} Punkten wird es nass.`;
+            } else {
+                verdictEl.textContent = '✅ Du bleibst trocken!';
+                verdictEl.className = 'verdict safe';
+                subVerdictEl.textContent = 'Kein Regen auf deiner Route vorhergesagt.';
+            }
+
+            // Timeline-Punkte
+            timelinePointsEl.innerHTML = '';
+            let rainCount = 0;
+            weatherResults.forEach((p, idx) => {
+                const willRain = p.weather.willRain;
+                if (willRain) rainCount++;
+
+                const dotClass = willRain ? 'wet' : 'dry';
+                const timeStr = p.targetTime.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+
+                const col = document.createElement('div');
+                col.className = 'timeline-point';
+                col.innerHTML = `
+                    <div class="point-dot ${dotClass}"></div>
+                    <div class="point-label">${p.label}</div>
+                    <div class="point-time">${timeStr}</div>
+                    <div class="point-weather">
+                        ${willRain ? '🌧️' : (p.weather.precipitation_probability > 30 ? '☁️' : '☀️')}
+                        ${p.weather.precipitation_probability > 0 ? `${p.weather.precipitation_probability}%` : ''}
+                    </div>
+                `;
+                timelinePointsEl.appendChild(col);
+            });
+
+            // Timeline-Füllung (Anteil der Strecke ohne Regen)
+            const dryFraction = 1 - (rainCount / weatherResults.length);
+            timelineFillEl.style.width = `${dryFraction * 100}%`;
+
+            // Details
+            const modeLabel = mode === 'walking' ? '🚶 Gehen' : '🚴 Fahrrad';
+            detailsGridEl.innerHTML = `
+                <div class="detail-item">
+                    <div class="label">Strecke (Luftlinie)</div>
+                    <div class="value">${distKm.toFixed(1)} km</div>
+                </div>
+                <div class="detail-item">
+                    <div class="label">Geschätzte Dauer</div>
+                    <div class="value">${formatDuration(totalMinutes)}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="label">Verkehrsmittel</div>
+                    <div class="value">${modeLabel}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="label">Start</div>
+                    <div class="value" style="font-size:0.85rem;">${startGeo.displayName.split(',')[0]}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="label">Ziel</div>
+                    <div class="value" style="font-size:0.85rem;">${zielGeo.displayName.split(',')[0]}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="label">Wetterabfragen</div>
+                    <div class="value">${weatherResults.length} Punkte</div>
+                </div>
+            `;
+
+            DOM.resultCard.classList.add('visible');
+            DOM.resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function formatDuration(totalMinutes) {
+            if (totalMinutes < 1) return '< 1 Min.';
+            const hrs = Math.floor(totalMinutes / 60);
+            const mins = Math.round(totalMinutes % 60);
+            if (hrs > 0) {
+                return `${hrs}h ${mins}min`;
+            }
+            return `${mins} Min.`;
+        }
+
+        function showError(msg) {
+            DOM.errorMsg.textContent = msg;
+            DOM.errorMsg.classList.add('visible');
+        }
+
+        function hideError() {
+            DOM.errorMsg.textContent = '';
+            DOM.errorMsg.classList.remove('visible');
+        }
+
+        // ============================================================
+        // 7. Toggle-Buttons (Radio-Button-Verhalten)
+        // ============================================================
+        function setMode(btn) {
+            // Alle deaktivieren
+            DOM.toggleBtns.forEach(b => b.classList.remove('active'));
+            // Ausgewählten aktivieren
+            btn.classList.add('active');
+            // Globale Variablen setzen
+            currentMode = btn.dataset.mode;
+            currentSpeed = parseFloat(btn.dataset.speed);
+        }
+
+        DOM.toggleBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                setMode(btn);
+                checkWeather();
+            });
+        });
+
+        // Initial: "Gehen" ist standardmäßig aktiv – Klasse ist schon im HTML gesetzt,
+        // aber die globalen Variablen müssen initial gesetzt werden.
+        (function initMode() {
+            const activeBtn = document.querySelector('.toggle-btn.active');
+            if (activeBtn) {
+                currentMode = activeBtn.dataset.mode;
+                currentSpeed = parseFloat(activeBtn.dataset.speed);
+            }
+        })();
+
+        // ============================================================
+        // 8. Event Listener
+        // ============================================================
+        DOM.checkBtn.addEventListener('click', checkWeather);
+
+        // Enter-Taste in Inputs
+        DOM.start.addEventListener('keydown', (e) => { if (e.key === 'Enter') checkWeather(); });
+        DOM.ziel.addEventListener('keydown', (e) => { if (e.key === 'Enter') checkWeather(); });
+
+        // Auto-Check beim Laden (Startbeispiel)
+        window.addEventListener('load', () => {
+            setTimeout(checkWeather, 300);
+        });
+    </script>
+</body>
+</html>
