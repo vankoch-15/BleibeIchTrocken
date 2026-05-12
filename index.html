@@ -231,22 +231,39 @@
             text-align: center;
             font-size: 1.5rem;
             font-weight: 700;
-            padding: 1rem 0 0.5rem 0;
-            border-radius: 10px;
+            padding: 1.2rem 1rem;
+            border-radius: 12px;
+            transition: background 0.4s, color 0.4s, box-shadow 0.4s;
         }
 
-        .verdict.safe {
+        .verdict.level-dry {
+            background: rgba(102, 187, 106, 0.2);
             color: #66bb6a;
+            box-shadow: 0 0 20px rgba(102, 187, 106, 0.15);
         }
 
-        .verdict.warning {
+        .verdict.level-light {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffd54f;
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.15);
+        }
+
+        .verdict.level-moderate {
+            background: rgba(255, 152, 0, 0.2);
+            color: #ffb74d;
+            box-shadow: 0 0 20px rgba(255, 152, 0, 0.15);
+        }
+
+        .verdict.level-heavy {
+            background: rgba(239, 83, 80, 0.2);
             color: #ef5350;
+            box-shadow: 0 0 20px rgba(239, 83, 80, 0.2);
             animation: pulse 1.5s ease-in-out infinite;
         }
 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
+            50% { opacity: 0.7; }
         }
 
         .sub-verdict {
@@ -308,15 +325,22 @@
             background: #66bb6a;
         }
 
-        .point-dot.wet {
+        .point-dot.light {
+            border-color: #ffd54f;
+            background: #ffd54f;
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.4);
+        }
+
+        .point-dot.moderate {
+            border-color: #ffb74d;
+            background: #ffb74d;
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.4);
+        }
+
+        .point-dot.heavy {
             border-color: #ef5350;
             background: #ef5350;
             box-shadow: 0 0 12px rgba(239, 83, 80, 0.6);
-        }
-
-        .point-dot.warning-dot {
-            border-color: #ffa726;
-            background: #ffa726;
         }
 
         .point-label {
@@ -365,6 +389,155 @@
             font-weight: 600;
             color: #fff;
             margin-top: 0.15rem;
+        }
+
+        /* ========== Zeitfenster-Timeline ========== */
+        .slot-section {
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .slot-section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #90caf9;
+            margin-bottom: 0.75rem;
+            text-align: center;
+        }
+
+        .slot-timeline {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .slot-item {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 0.7rem 0.4rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .slot-item.slot-best {
+            border-color: #ffd54f;
+            box-shadow: 0 0 12px rgba(255, 213, 79, 0.3);
+            background: rgba(255, 213, 79, 0.1);
+        }
+
+        .slot-item .slot-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: #90caf9;
+            margin-bottom: 0.25rem;
+        }
+
+        .slot-item .slot-icon {
+            font-size: 1.3rem;
+            line-height: 1.4;
+        }
+
+        .slot-item .slot-desc {
+            font-size: 0.65rem;
+            color: #78909c;
+            margin-top: 0.2rem;
+            line-height: 1.2;
+        }
+
+        .slot-item .slot-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            font-size: 0.85rem;
+            line-height: 1;
+        }
+
+        .slot-recommendation {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #ffd54f;
+            margin-top: 0.6rem;
+            font-weight: 600;
+        }
+
+        /* ========== Fahrrad-Komfort-Index (Wind) ========== */
+        .wind-section {
+            margin-top: 1rem;
+            padding: 0.85rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .wind-section.wind-only-bicycle {
+            border-color: rgba(66, 165, 245, 0.25);
+        }
+
+        .wind-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #90caf9;
+            margin-bottom: 0.4rem;
+        }
+
+        .wind-icon {
+            font-size: 1.4rem;
+        }
+
+        .wind-feedback {
+            text-align: center;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 0.3rem 0;
+        }
+
+        .wind-feedback.tailwind {
+            color: #66bb6a;
+        }
+
+        .wind-feedback.headwind {
+            color: #ef5350;
+        }
+
+        .wind-feedback.crosswind {
+            color: #ffb74d;
+        }
+
+        .wind-feedback.calm {
+            color: #90caf9;
+        }
+
+        .wind-meta {
+            display: flex;
+            justify-content: center;
+            gap: 1.2rem;
+            margin-top: 0.3rem;
+            font-size: 0.75rem;
+            color: #78909c;
+        }
+
+        .wind-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .wind-duration-note {
+            text-align: center;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+            color: #b0bec5;
         }
 
         .loading {
@@ -491,6 +664,22 @@
             </div>
 
             <div class="details-grid" id="detailsGrid"></div>
+
+            <div class="slot-section" id="slotSection">
+                <div class="slot-section-title">⏰ Optimaler Startzeitpunkt</div>
+                <div class="slot-timeline" id="slotTimeline"></div>
+                <div class="slot-recommendation" id="slotRecommendation"></div>
+            </div>
+
+            <div class="wind-section" id="windSection" style="display:none;">
+                <div class="wind-header">
+                    <span class="wind-icon">🌬️</span>
+                    <span>Fahrrad-Komfort-Index</span>
+                </div>
+                <div class="wind-feedback" id="windFeedback"></div>
+                <div class="wind-meta" id="windMeta"></div>
+                <div class="wind-duration-note" id="windDurationNote"></div>
+            </div>
         </div>
     </div>
 
@@ -514,6 +703,13 @@
             toggleBtns: document.querySelectorAll('.toggle-btn'),
             startSuggestions: document.getElementById('startSuggestions'),
             zielSuggestions: document.getElementById('zielSuggestions'),
+            slotSection: document.getElementById('slotSection'),
+            slotTimeline: document.getElementById('slotTimeline'),
+            slotRecommendation: document.getElementById('slotRecommendation'),
+            windSection: document.getElementById('windSection'),
+            windFeedback: document.getElementById('windFeedback'),
+            windMeta: document.getElementById('windMeta'),
+            windDurationNote: document.getElementById('windDurationNote'),
         };
 
         // Globale Variable: aktuell gewähltes Verkehrsmittel
@@ -539,17 +735,13 @@
         }
 
         // ============================================================
-        // 2. Open-Meteo Wetter ohne API-Key
+        // 2. Open-Meteo Wetter + Wind-Daten
         // ============================================================
-        async function fetchWeather(lat, lon, targetDate) {
-            // Open-Meteo Forecast API – liefert minütliche Niederschlagsdaten
-            const startHour = targetDate.getUTCHours();
-            const endHour = startHour + 1; // Wir fragen ein 2-Stunden-Fenster ab
-
+        async function fetchWeather(lat, lon) {
             const params = new URLSearchParams({
                 latitude: lat,
                 longitude: lon,
-                hourly: 'precipitation_probability,precipitation',
+                hourly: 'precipitation_probability,precipitation,wind_speed_10m,wind_direction_10m',
                 timezone: 'auto',
                 forecast_days: 2,
             });
@@ -559,11 +751,18 @@
             if (!resp.ok) throw new Error(`Open-Meteo-Fehler: ${resp.status}`);
             const data = await resp.json();
 
-            // Finde den Index, der unserer Zielzeit am nächsten kommt
-            const times = data.hourly.time;
-            const precipProb = data.hourly.precipitation_probability;
-            const precip = data.hourly.precipitation;
+            return {
+                times: data.hourly.time,
+                precipProb: data.hourly.precipitation_probability || [],
+                precip: data.hourly.precipitation || [],
+                windSpeed: data.hourly.wind_speed_10m || [],
+                windDirection: data.hourly.wind_direction_10m || [],
+            };
+        }
 
+        // Wetter für eine bestimmte Zielzeit aus dem gecachten hourly-Array abrufen
+        function getWeatherAtTime(weatherData, targetDate) {
+            const times = weatherData.times;
             let bestIdx = 0;
             let bestDiff = Infinity;
             for (let i = 0; i < times.length; i++) {
@@ -574,12 +773,159 @@
                     bestIdx = i;
                 }
             }
-
+            const mm = weatherData.precip[bestIdx] || 0;
+            const prob = weatherData.precipProb[bestIdx] || 0;
             return {
                 time: times[bestIdx],
-                precipitation_probability: precipProb ? precipProb[bestIdx] : 0,
-                precipitation: precip ? precip[bestIdx] : 0,
-                willRain: (precip[bestIdx] || 0) > 0,
+                precipitation_probability: prob,
+                precipitation: mm,
+                willRain: mm > 0,
+                wind_speed: weatherData.windSpeed[bestIdx] || 0,
+                wind_direction: weatherData.windDirection[bestIdx] || 0,
+            };
+        }
+
+        // ============================================================
+        // 2c. Bearing (Fahrtrichtung) berechnen
+        // ============================================================
+        function calculateBearing(lat1, lon1, lat2, lon2) {
+            const toRad = (deg) => deg * Math.PI / 180;
+            const toDeg = (rad) => rad * 180 / Math.PI;
+
+            const φ1 = toRad(lat1);
+            const φ2 = toRad(lat2);
+            const λ1 = toRad(lon1);
+            const λ2 = toRad(lon2);
+
+            const y = Math.sin(λ2 - λ1) * Math.cos(φ2);
+            const x = Math.cos(φ1) * Math.sin(φ2) -
+                      Math.sin(φ1) * Math.cos(φ2) * Math.cos(λ2 - λ1);
+            const bearing = toDeg(Math.atan2(y, x));
+            return (bearing + 360) % 360; // 0-360°
+        }
+
+        // ============================================================
+        // 2d. Fahrrad-Komfort-Index (Wind-Analyse)
+        // ============================================================
+        function analyzeWind(bearing, windSpeed, windDirection, mode) {
+            // Nur für Fahrrad relevant
+            if (mode !== 'bicycle') {
+                return { show: false };
+            }
+
+            if (!windSpeed || windSpeed < 0.5) {
+                return {
+                    show: true,
+                    type: 'calm',
+                    label: 'Windstill',
+                    icon: '🍃',
+                    message: 'Kein nennenswerter Wind – ideale Fahrradbedingungen.',
+                    speed: 0,
+                    durationFactor: 1.0,
+                };
+            }
+
+            // Differenz zwischen Windrichtung und Fahrtrichtung normalisieren (0-180°)
+            let diff = Math.abs(windDirection - bearing);
+            if (diff > 180) diff = 360 - diff;
+
+            let type, label, icon, message, durationFactor;
+
+            // Gegenwind: Differenz nahe 180°
+            if (diff >= 135) {
+                type = 'headwind';
+                label = 'Gegenwind';
+                icon = '🌬️⬆️';
+                if (windSpeed >= 20) {
+                    message = 'Vorsicht: Starker Gegenwind! Du wirst länger brauchen.';
+                    durationFactor = 1.0 + Math.min(0.20, windSpeed / 100); // 10-20% mehr
+                } else if (windSpeed >= 10) {
+                    message = 'Mäßiger Gegenwind – etwas mehr Kraft nötig.';
+                    durationFactor = 1.0 + Math.min(0.10, windSpeed / 150);
+                } else {
+                    message = 'Leichter Gegenwind – kaum spürbar.';
+                    durationFactor = 1.02;
+                }
+            }
+            // Rückenwind: Differenz nahe 0°
+            else if (diff <= 45) {
+                type = 'tailwind';
+                label = 'Rückenwind';
+                icon = '🌬️⬇️';
+                if (windSpeed >= 20) {
+                    message = 'Super: Rückenwind schiebt dich an!';
+                    durationFactor = 1.0 - Math.min(0.15, windSpeed / 150);
+                } else if (windSpeed >= 10) {
+                    message = 'Guter Rückenwind – du rollst leichter.';
+                    durationFactor = 1.0 - Math.min(0.08, windSpeed / 200);
+                } else {
+                    message = 'Leichter Rückenwind – kleiner Schub.';
+                    durationFactor = 0.98;
+                }
+            }
+            // Seitenwind: Differenz ~90°
+            else {
+                type = 'crosswind';
+                label = 'Seitenwind';
+                icon = '🌬️➡️';
+                if (windSpeed >= 20) {
+                    message = 'Achtung: Böiger Seitenwind, fahre vorsichtig.';
+                } else if (windSpeed >= 10) {
+                    message = 'Spürbarer Seitenwind – etwas Konzentration nötig.';
+                } else {
+                    message = 'Leichter Seitenwind – kaum störend.';
+                }
+                durationFactor = 1.0; // Seitenwind ändert Dauer kaum
+            }
+
+            return {
+                show: true,
+                type,
+                label,
+                icon,
+                message,
+                speed: windSpeed,
+                bearing: Math.round(bearing),
+                windDirection: Math.round(windDirection),
+                diff: Math.round(diff),
+                durationFactor,
+            };
+        }
+
+        // ============================================================
+        // 2b. Regen-Intensität bewerten
+        // ============================================================
+        function getWeatherAdvice(mm) {
+            if (mm === 0 || mm === null || mm === undefined) {
+                return {
+                    level: 'dry',
+                    label: 'Trocken',
+                    icon: '🟢',
+                    message: 'Du bleibst trocken!',
+                };
+            }
+            if (mm <= 0.5) {
+                return {
+                    level: 'light',
+                    label: 'Leichter Regen',
+                    icon: '🟡',
+                    message: 'Nur leichter Nieselregen – eine Kapuze reicht.',
+                };
+            }
+            if (mm <= 2.0) {
+                return {
+                    level: 'moderate',
+                    label: 'Mäßiger Regen',
+                    icon: '🟠',
+                    message: 'Es regnet – nimm einen Regenschirm oder Regenjacke mit.',
+                };
+            }
+            // > 2.0 mm
+            return {
+                level: 'heavy',
+                label: 'Starkregen',
+                icon: '🔴',
+                message: 'Starkregen-Warnung! Such dir lieber einen Unterstand oder warte ab.',
             };
         }
 
@@ -651,36 +997,85 @@
                 // 5b. Distanz & Dauer
                 const distKm = haversineDistance(startGeo.lat, startGeo.lon, zielGeo.lat, zielGeo.lon);
                 const speedKmh = currentSpeed;
-                const totalSeconds = estimateDuration(distKm, speedKmh);
-                const totalMinutes = totalSeconds / 60;
+                let totalSeconds = estimateDuration(distKm, speedKmh);
+                let totalMinutes = totalSeconds / 60;
+
+                // 5b1. Bearing (Fahrtrichtung) berechnen
+                const bearing = calculateBearing(startGeo.lat, startGeo.lon, zielGeo.lat, zielGeo.lon);
 
                 // 5c. Checkpunkte (Start, Mitte, Ziel)
                 const points = interpolatePoints(startGeo.lat, startGeo.lon, zielGeo.lat, zielGeo.lon, 3);
 
-                // 5d. Zeitversetzte Wetterabfragen
+                // 5d. Wetterdaten für alle 3 Koordinaten laden (einmalig pro Koordinate)
+                const [startWeather, midWeather, endWeather] = await Promise.all([
+                    fetchWeather(points[0].lat, points[0].lon),
+                    fetchWeather(points[1].lat, points[1].lon),
+                    fetchWeather(points[2].lat, points[2].lon),
+                ]);
+
+                // Wind-Daten aus dem Start-Wetter extrahieren
                 const now = new Date();
-                const weatherResults = [];
+                const windAtStart = getWeatherAtTime(startWeather, now);
+                const windAnalysis = analyzeWind(bearing, windAtStart.wind_speed, windAtStart.wind_direction, mode);
 
-                for (let i = 0; i < points.length; i++) {
-                    const p = points[i];
-                    const fraction = i / (points.length - 1);
-                    const offsetMs = totalSeconds * fraction * 1000;
-                    const targetTime = new Date(now.getTime() + offsetMs);
-
-                    const weather = await fetchWeather(p.lat, p.lon, targetTime);
-                    weatherResults.push({
-                        ...p,
-                        targetTime,
-                        weather,
-                    });
+                // 5b3. Dauer bei starkem Wind anpassen
+                if (windAnalysis.show && windAnalysis.durationFactor !== 1.0) {
+                    totalSeconds = totalSeconds * windAnalysis.durationFactor;
+                    totalMinutes = totalSeconds / 60;
                 }
 
-                // 5e. Entscheidung
-                const rainAtPoints = weatherResults.filter(w => w.weather.willRain);
-                const hasRain = rainAtPoints.length > 0;
+                const weatherDataMap = {
+                    [points[0].label]: startWeather,
+                    [points[1].label]: midWeather,
+                    [points[2].label]: endWeather,
+                };
 
-                // 5f. UI rendern
-                renderResult(weatherResults, hasRain, rainAtPoints, distKm, totalMinutes, mode, startGeo, zielGeo);
+                // 5e. Vier Startzeit-Slots auswerten
+                const slotOffsets = [0, 15, 30, 45]; // Minuten
+                const slotLabels = ['Sofort', '+15m', '+30m', '+45m'];
+
+                const slotResults = slotOffsets.map((offsetMin, idx) => {
+                    const startTime = new Date(now.getTime() + offsetMin * 60 * 1000);
+                    const pointResults = points.map((p) => {
+                        const fraction = p.label === 'Start' ? 0 : (p.label === 'Ziel' ? 1 : 0.5);
+                        const offsetMs = totalSeconds * fraction * 1000;
+                        const targetTime = new Date(startTime.getTime() + offsetMs);
+                        const weather = getWeatherAtTime(weatherDataMap[p.label], targetTime);
+                        const advice = getWeatherAdvice(weather.precipitation);
+                        return { ...p, targetTime, weather, advice };
+                    });
+
+                    // Höchste Intensität in diesem Slot
+                    const levelRank = { dry: 0, light: 1, moderate: 2, heavy: 3 };
+                    const worst = pointResults.reduce((w, c) =>
+                        levelRank[c.advice.level] > levelRank[w.advice.level] ? c : w
+                    , pointResults[0]);
+
+                    // Gesamt-mm (max) für Ranking
+                    const maxMm = Math.max(...pointResults.map(r => r.weather.precipitation));
+
+                    return {
+                        slotIndex: idx,
+                        label: slotLabels[idx],
+                        startTime,
+                        points: pointResults,
+                        worst,
+                        maxMm,
+                    };
+                });
+
+                // 5f. Besten Slot ermitteln (niedrigste Intensität, bei Gleichstand geringster mm)
+                const levelRank2 = { dry: 0, light: 1, moderate: 2, heavy: 3 };
+                const bestSlot = slotResults.reduce((best, curr) => {
+                    const bestRank = levelRank2[best.worst.advice.level];
+                    const currRank = levelRank2[curr.worst.advice.level];
+                    if (currRank < bestRank) return curr;
+                    if (currRank === bestRank && curr.maxMm < best.maxMm) return curr;
+                    return best;
+                }, slotResults[0]);
+
+                // 5g. UI rendern (mit dem "Jetzt"-Slot als Hauptansicht)
+                renderResult(slotResults[0].points, slotResults[0].worst, distKm, totalMinutes, mode, startGeo, zielGeo, slotResults, bestSlot, windAnalysis);
 
             } catch (err) {
                 showError(err.message);
@@ -693,35 +1088,56 @@
         // ============================================================
         // 6. UI Rendering
         // ============================================================
-        function renderResult(weatherResults, hasRain, rainAtPoints, distKm, totalMinutes, mode, startGeo, zielGeo) {
+        function renderResult(weatherResults, worstPoint, distKm, totalMinutes, mode, startGeo, zielGeo, slotResults, bestSlot, windAnalysis) {
             const verdictEl = DOM.verdict;
             const subVerdictEl = DOM.subVerdict;
             const timelinePointsEl = DOM.timelinePoints;
             const timelineFillEl = DOM.timelineFill;
             const detailsGridEl = DOM.detailsGrid;
 
-            // Verdict
-            if (hasRain) {
-                const msg = rainAtPoints.some(p => p.label === 'Start')
-                    ? 'Du fährst direkt in den Regen! ☔'
-                    : 'Der Regen holt dich ein! ☔';
-                verdictEl.textContent = msg;
-                verdictEl.className = 'verdict warning';
-                subVerdictEl.textContent = `An ${rainAtPoints.length} von ${weatherResults.length} Punkten wird es nass.`;
+            const worstAdvice = worstPoint.advice;
+
+            // Verdict – Farbe + Text basierend auf der höchsten Intensität
+            const levelNames = {
+                dry: 'level-dry',
+                light: 'level-light',
+                moderate: 'level-moderate',
+                heavy: 'level-heavy',
+            };
+
+            verdictEl.textContent = `${worstAdvice.icon} ${worstAdvice.message}`;
+            verdictEl.className = `verdict ${levelNames[worstAdvice.level]}`;
+
+            // Sub-Verdict – Details zu den Punkten
+            const rainCount = weatherResults.filter(p => p.weather.precipitation > 0).length;
+            if (rainCount === 0) {
+                subVerdictEl.textContent = 'Kein Regen auf deiner Route vorhergesagt. 🌤️';
             } else {
-                verdictEl.textContent = '✅ Du bleibst trocken!';
-                verdictEl.className = 'verdict safe';
-                subVerdictEl.textContent = 'Kein Regen auf deiner Route vorhergesagt.';
+                const maxMm = Math.max(...weatherResults.map(p => p.weather.precipitation));
+                subVerdictEl.textContent = `${worstAdvice.icon} ${worstAdvice.label}: maximal ${maxMm.toFixed(1)} mm – ${rainCount} von ${weatherResults.length} Punkten betroffen.`;
             }
 
             // Timeline-Punkte
             timelinePointsEl.innerHTML = '';
-            let rainCount = 0;
-            weatherResults.forEach((p, idx) => {
-                const willRain = p.weather.willRain;
-                if (willRain) rainCount++;
+            weatherResults.forEach((p) => {
+                const mm = p.weather.precipitation;
+                const prob = p.weather.precipitation_probability;
 
-                const dotClass = willRain ? 'wet' : 'dry';
+                let dotClass = 'dry';
+                let weatherIcon = '☀️';
+                if (mm > 2.0) {
+                    dotClass = 'heavy';
+                    weatherIcon = '🌧️🔴';
+                } else if (mm > 0.5) {
+                    dotClass = 'moderate';
+                    weatherIcon = '🌧️🟠';
+                } else if (mm > 0) {
+                    dotClass = 'light';
+                    weatherIcon = '🌦️🟡';
+                } else if (prob > 30) {
+                    weatherIcon = '☁️';
+                }
+
                 const timeStr = p.targetTime.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
 
                 const col = document.createElement('div');
@@ -731,15 +1147,16 @@
                     <div class="point-label">${p.label}</div>
                     <div class="point-time">${timeStr}</div>
                     <div class="point-weather">
-                        ${willRain ? '🌧️' : (p.weather.precipitation_probability > 30 ? '☁️' : '☀️')}
-                        ${p.weather.precipitation_probability > 0 ? `${p.weather.precipitation_probability}%` : ''}
+                        ${weatherIcon}
+                        ${mm > 0 ? `<br>${mm.toFixed(1)} mm` : (prob > 0 ? `<br>${prob}%` : '')}
                     </div>
                 `;
                 timelinePointsEl.appendChild(col);
             });
 
             // Timeline-Füllung (Anteil der Strecke ohne Regen)
-            const dryFraction = 1 - (rainCount / weatherResults.length);
+            const rainCount2 = weatherResults.filter(p => p.weather.precipitation > 0).length;
+            const dryFraction = 1 - (rainCount2 / weatherResults.length);
             timelineFillEl.style.width = `${dryFraction * 100}%`;
 
             // Details
@@ -766,13 +1183,142 @@
                     <div class="value" style="font-size:0.85rem;">${zielGeo.displayName.split(',')[0]}</div>
                 </div>
                 <div class="detail-item">
-                    <div class="label">Wetterabfragen</div>
-                    <div class="value">${weatherResults.length} Punkte</div>
+                    <div class="label">Max. Regen</div>
+                    <div class="value">${Math.max(...weatherResults.map(p => p.weather.precipitation)).toFixed(1)} mm</div>
                 </div>
             `;
 
+            // ============================================================
+            // Slot-Timeline rendern
+            // ============================================================
+            if (slotResults && bestSlot) {
+                renderSlotTimeline(slotResults, bestSlot);
+            }
+
+            // ============================================================
+            // Wind (Fahrrad-Komfort-Index) rendern
+            // ============================================================
+            renderWindInfo(windAnalysis, totalMinutes, distKm);
+
             DOM.resultCard.classList.add('visible');
             DOM.resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ============================================================
+        // 6c. Wind-Info rendern (Fahrrad-Komfort-Index)
+        // ============================================================
+        function renderWindInfo(wind, totalMinutes, distKm) {
+            const section = DOM.windSection;
+            const feedbackEl = DOM.windFeedback;
+            const metaEl = DOM.windMeta;
+            const durationNoteEl = DOM.windDurationNote;
+
+            if (!wind || !wind.show) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            section.className = 'wind-section wind-only-bicycle';
+
+            // Feedback-Klasse
+            const typeClassMap = {
+                tailwind: 'tailwind',
+                headwind: 'headwind',
+                crosswind: 'crosswind',
+                calm: 'calm',
+            };
+            feedbackEl.className = `wind-feedback ${typeClassMap[wind.type] || 'calm'}`;
+
+            // Angepasste Dauer berechnen (für Anzeige)
+            const baseMinutes = estimateDuration(distKm, currentSpeed) / 60;
+            const diffMinutes = totalMinutes - baseMinutes;
+            const diffSign = diffMinutes >= 0 ? '+' : '';
+            const diffStr = Math.abs(diffMinutes) >= 0.5 ? `${diffSign}${Math.round(diffMinutes)} Min.` : '±0 Min.';
+
+            if (wind.type === 'calm') {
+                feedbackEl.textContent = '🍃 ' + wind.message;
+                metaEl.innerHTML = `
+                    <span>🌬️ ${wind.speed.toFixed(0)} km/h</span>
+                    <span>🧭 Windstill</span>
+                `;
+                durationNoteEl.textContent = '';
+            } else {
+                feedbackEl.textContent = `${wind.icon} ${wind.message}`;
+                metaEl.innerHTML = `
+                    <span>🌬️ ${wind.speed.toFixed(0)} km/h</span>
+                    <span>🧭 Wind: ${wind.windDirection}°</span>
+                    <span>📍 Fahrt: ${wind.bearing}°</span>
+                    <span>📐 Diff: ${wind.diff}°</span>
+                `;
+                if (wind.durationFactor !== 1.0) {
+                    const pct = Math.round((wind.durationFactor - 1) * 100);
+                    const pctSign = pct >= 0 ? '+' : '';
+                    durationNoteEl.textContent = `⏱️ Dauer angepasst: ${pctSign}${pct}% (${diffStr})`;
+                } else {
+                    durationNoteEl.textContent = '⏱️ Keine Dauer-Anpassung durch Wind.';
+                }
+            }
+        }
+
+        // ============================================================
+        // 6b. Slot-Timeline rendern
+        // ============================================================
+        function renderSlotTimeline(slotResults, bestSlot) {
+            const container = DOM.slotTimeline;
+            const recEl = DOM.slotRecommendation;
+            container.innerHTML = '';
+
+            const levelRank = { dry: 0, light: 1, moderate: 2, heavy: 3 };
+
+            slotResults.forEach((slot) => {
+                const isBest = slot.slotIndex === bestSlot.slotIndex;
+                const worstLevel = slot.worst.advice.level;
+
+                // Emoji für den Slot
+                let emoji = '🟢';
+                if (worstLevel === 'light') emoji = '🟡';
+                else if (worstLevel === 'moderate') emoji = '🟠';
+                else if (worstLevel === 'heavy') emoji = '🔴';
+
+                // Beschreibung
+                let desc = slot.worst.advice.label;
+                if (slot.maxMm > 0) desc += ` (${slot.maxMm.toFixed(1)} mm)`;
+
+                const div = document.createElement('div');
+                div.className = `slot-item${isBest ? ' slot-best' : ''}`;
+                div.innerHTML = `
+                    <div class="slot-label">${slot.label}</div>
+                    <div class="slot-icon">${emoji}</div>
+                    <div class="slot-desc">${desc}</div>
+                    ${isBest ? '<div class="slot-badge">⭐</div>' : ''}
+                `;
+                container.appendChild(div);
+            });
+
+            // Empfehlungstext
+            const bestLabel = bestSlot.label;
+            const bestLevel = bestSlot.worst.advice.level;
+            const nowLevel = slotResults[0].worst.advice.level;
+
+            if (bestLevel === 'dry' && nowLevel !== 'dry') {
+                // Es regnet jetzt, aber später wird's trocken
+                if (bestLabel === '+15m') {
+                    recEl.textContent = '⏳ Warte noch kurz! In 15 Minuten bleibst du trocken.';
+                } else if (bestLabel === '+30m') {
+                    recEl.textContent = '⏳ Warte noch! In 30 Minuten bleibst du trocken.';
+                } else if (bestLabel === '+45m') {
+                    recEl.textContent = '⏳ Warte eine Weile! In 45 Minuten bleibst du trocken.';
+                } else {
+                    recEl.textContent = '✅ Jetzt ist der beste Zeitpunkt – du bleibst trocken!';
+                }
+            } else if (bestLevel === nowLevel && slotResults[0].maxMm === bestSlot.maxMm) {
+                recEl.textContent = '✅ Jetzt ist bereits der beste Zeitpunkt zum Losgehen.';
+            } else {
+                // Alle Slots haben Regen – besten als "Beste Wahl" markieren
+                const bestAdvice = bestSlot.worst.advice;
+                recEl.textContent = `⭐ Beste Wahl: ${bestLabel} (${bestAdvice.icon} ${bestAdvice.label}, ${bestSlot.maxMm.toFixed(1)} mm) – geringster Niederschlag.`;
+            }
         }
 
         function formatDuration(totalMinutes) {
