@@ -2,24 +2,53 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Bleibe ich trocken?</title>
+
+    <!-- iOS Web-App (Standalone) -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Trocken?" />
+
+    <!-- Apple Touch Icon (SVG als Data-URI: Sonne + Regenwolke auf blauem Grund) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='30' fill='%231a237e'/%3E%3Ccircle cx='78' cy='72' r='32' fill='%23ffd54f'/%3E%3Cg stroke='%23ffd54f' stroke-width='4' stroke-linecap='round'%3E%3Cline x1='78' y1='18' x2='78' y2='28'/%3E%3Cline x1='78' y1='116' x2='78' y2='126'/%3E%3Cline x1='38' y1='72' x2='48' y2='72'/%3E%3Cline x1='108' y1='72' x2='118' y2='72'/%3E%3Cline x1='50' y1='44' x2='57' y2='51'/%3E%3Cline x1='99' y1='93' x2='106' y2='100'/%3E%3Cline x1='99' y1='44' x2='106' y2='51'/%3E%3Cline x1='50' y1='100' x2='57' y2='93'/%3E%3C/g%3E%3Cpath d='M95 115 Q95 100 110 100 Q112 88 125 90 Q130 78 145 85 Q155 75 162 90 Q175 88 175 105 Q175 115 165 118 L98 118 Q88 118 88 110 Q88 100 95 100 Z' fill='%2378909c'/%3E%3Cpath d='M125 95 L125 82 M115 88 L135 88 M120 92 L130 92 M117 96 L133 96 M115 100 L135 100' stroke='%2342a5f5' stroke-width='2.5' stroke-linecap='round' opacity='0.5'/%3E%3Ctext x='90' y='158' font-family='-apple-system,Helvetica,sans-serif' font-size='22' font-weight='bold' fill='white' text-anchor='middle'%3E?%3C/text%3E%3C/svg%3E" />
+
+    <!-- Safari-Theme-Farbe (Statusleiste) -->
+    <meta name="theme-color" content="#1a237e" />
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            overscroll-behavior: none;
+            -webkit-overflow-scrolling: touch;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             background: linear-gradient(135deg, #0c1445 0%, #1a237e 50%, #283593 100%);
             min-height: 100vh;
+            min-height: -webkit-fill-available;
             display: flex;
             justify-content: center;
             align-items: flex-start;
             padding: 2rem 1rem;
+            padding-top: env(safe-area-inset-top, 1rem);
+            padding-bottom: env(safe-area-inset-bottom, 1rem);
             color: #e0e0e0;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* Selektierbare Elemente wieder aktivieren */
+        input, textarea, .suggestion-item, .bonus-content b, .bonus-highlight {
+            -webkit-user-select: text;
+            user-select: text;
         }
 
         .app-container {
@@ -73,14 +102,14 @@
             top: calc(100% + 4px);
             left: 0;
             right: 0;
-            background: #1a237e;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
             border-radius: 10px;
             max-height: 220px;
             overflow-y: auto;
             z-index: 100;
             display: none;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
         }
 
         .suggestions-dropdown.visible {
@@ -91,8 +120,8 @@
             padding: 0.65rem 1rem;
             cursor: pointer;
             font-size: 0.85rem;
-            color: #b0bec5;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            color: #333;
+            border-bottom: 1px solid #f0f0f0;
             transition: background 0.15s;
         }
 
@@ -102,8 +131,8 @@
 
         .suggestion-item:hover,
         .suggestion-item.highlighted {
-            background: rgba(66, 165, 245, 0.2);
-            color: #fff;
+            background: #e3f2fd;
+            color: #1565c0;
         }
 
         .suggestion-item .suggestion-type {
@@ -112,6 +141,7 @@
             margin-left: 0.5rem;
             text-transform: uppercase;
             letter-spacing: 0.03em;
+            font-weight: 600;
         }
 
         .suggestions-dropdown::-webkit-scrollbar {
@@ -123,7 +153,7 @@
         }
 
         .suggestions-dropdown::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.15);
             border-radius: 3px;
         }
 
@@ -540,6 +570,82 @@
             color: #b0bec5;
         }
 
+        /* ========== Motivations-Modul: Dein Bonus für heute ========== */
+        .bonus-section {
+            margin-top: 1rem;
+            padding: 1rem 1.2rem;
+            background: rgba(102, 187, 106, 0.08);
+            border: 1px solid rgba(102, 187, 106, 0.25);
+            border-radius: 12px;
+            transition: all 0.4s ease;
+        }
+
+        .bonus-section.bonus-subtle {
+            border-color: rgba(102, 187, 106, 0.15);
+            background: rgba(102, 187, 106, 0.04);
+        }
+
+        .bonus-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #81c784;
+            margin-bottom: 0.5rem;
+        }
+
+        .bonus-content {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #c8e6c9;
+            line-height: 1.5;
+        }
+
+        .bonus-content .bonus-highlight {
+            font-weight: 700;
+            color: #66bb6a;
+        }
+
+        .bonus-content .bonus-emoji {
+            font-size: 1.1rem;
+        }
+
+        .bonus-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 0.5rem;
+        }
+
+        .bonus-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .bonus-stat .stat-icon {
+            font-size: 1.3rem;
+        }
+
+        .bonus-stat .stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #81c784;
+            margin-top: 0.1rem;
+        }
+
+        .bonus-stat .stat-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: #78909c;
+            margin-top: 0.05rem;
+        }
+
         .loading {
             display: none;
             text-align: center;
@@ -680,6 +786,12 @@
                 <div class="wind-meta" id="windMeta"></div>
                 <div class="wind-duration-note" id="windDurationNote"></div>
             </div>
+
+            <div class="bonus-section" id="bonusSection" style="display:none;">
+                <div class="bonus-header">🌟 Dein Bonus für heute</div>
+                <div class="bonus-content" id="bonusContent"></div>
+                <div class="bonus-stats" id="bonusStats"></div>
+            </div>
         </div>
     </div>
 
@@ -710,6 +822,9 @@
             windFeedback: document.getElementById('windFeedback'),
             windMeta: document.getElementById('windMeta'),
             windDurationNote: document.getElementById('windDurationNote'),
+            bonusSection: document.getElementById('bonusSection'),
+            bonusContent: document.getElementById('bonusContent'),
+            bonusStats: document.getElementById('bonusStats'),
         };
 
         // Globale Variable: aktuell gewähltes Verkehrsmittel
@@ -893,8 +1008,76 @@
         }
 
         // ============================================================
-        // 2b. Regen-Intensität bewerten
+        // 2e. Bonus-Berechnung (CO₂-Ersparnis & Kalorien)
         // ============================================================
+        function calculateBonus(distKm, totalMinutes, mode) {
+            const CO2_PER_KM = 150; // g CO2 pro km (PKW)
+            const kcalFactors = { walking: 4, bicycle: 8 }; // kcal pro Minute
+
+            const co2Kg = (distKm * CO2_PER_KM) / 1000;
+            const kcal = Math.round(totalMinutes * (kcalFactors[mode] || 4));
+
+            return { co2Kg, kcal };
+        }
+
+        // ============================================================
+        // 6d. Bonus-Bereich rendern (Motivation)
+        // ============================================================
+        function renderBonus(distKm, totalMinutes, mode, weatherResults) {
+            const section = DOM.bonusSection;
+            const contentEl = DOM.bonusContent;
+            const statsEl = DOM.bonusStats;
+
+            if (!distKm || distKm < 0.1) {
+                section.style.display = 'none';
+                return;
+            }
+
+            const bonus = calculateBonus(distKm, totalMinutes, mode);
+            const modeEmoji = mode === 'bicycle' ? '🚴' : '🚶';
+            const modeLabel = mode === 'bicycle' ? 'Rad' : 'Fußweg';
+
+            // Prüfen, ob Regen auf der Route ist
+            const hasRain = weatherResults.some(p => p.weather.precipitation > 0);
+
+            // Motivations-Text je nach Wetter
+            let motivationText = '';
+            if (hasRain) {
+                motivationText = `Trotz Regen lohnt es sich! 🌈`;
+            } else {
+                const weatherEmojis = ['☀️', '🌤️', '✨'];
+                const randomEmoji = weatherEmojis[Math.floor(Math.random() * weatherEmojis.length)];
+                motivationText = `Perfektes Wetter! ${randomEmoji}`;
+            }
+
+            section.style.display = 'block';
+
+            // Haupt-Content-Zeile
+            contentEl.innerHTML = `
+                ${motivationText} Wenn du den <b>${modeLabel}</b> nimmst, sparst du heute
+                <span class="bonus-highlight">${bonus.co2Kg.toFixed(2)} kg CO₂</span>
+                🌱 und verbrennst <span class="bonus-highlight">${bonus.kcal.toLocaleString('de-DE')} kcal</span> 🔥.
+            `;
+
+            // Stat-Kacheln
+            statsEl.innerHTML = `
+                <div class="bonus-stat">
+                    <div class="stat-icon">🌱</div>
+                    <div class="stat-value">${bonus.co2Kg.toFixed(2)} kg</div>
+                    <div class="stat-label">CO₂ gespart</div>
+                </div>
+                <div class="bonus-stat">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-value">${bonus.kcal.toLocaleString('de-DE')}</div>
+                    <div class="stat-label">Kalorien</div>
+                </div>
+                <div class="bonus-stat">
+                    <div class="stat-icon">${modeEmoji}</div>
+                    <div class="stat-value">${formatDuration(totalMinutes)}</div>
+                    <div class="stat-label">${modeLabel}</div>
+                </div>
+            `;
+        }
         function getWeatherAdvice(mm) {
             if (mm === 0 || mm === null || mm === undefined) {
                 return {
@@ -1200,6 +1383,11 @@
             // ============================================================
             renderWindInfo(windAnalysis, totalMinutes, distKm);
 
+            // ============================================================
+            // Bonus (CO₂ & Kalorien) rendern
+            // ============================================================
+            renderBonus(distKm, totalMinutes, mode, weatherResults);
+
             DOM.resultCard.classList.add('visible');
             DOM.resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
@@ -1372,13 +1560,29 @@
         })();
 
         // ============================================================
-        // 8. Autocomplete / Suggestions
+        // 8. Autocomplete / Suggestions + Smart Clear
         // ============================================================
 
         let suggestTimer = null;
 
+        // Smart Clear: Leert das Feld beim ersten Fokus, wenn der Nutzer neu tippen will.
+        // Wir merken uns, ob das Feld schonmal "gesmartcleart" wurde.
+        const smartClearState = {};
+
+        function setupSmartClear(inputEl) {
+            inputEl.addEventListener('focus', function onFirstFocus() {
+                // Nur beim ersten Fokus leeren, nicht bei jedem
+                if (smartClearState[inputEl.id]) return;
+                smartClearState[inputEl.id] = true;
+                inputEl.value = '';
+                // Dropdown verstecken, falls offen
+                const dropdown = inputEl.parentElement.querySelector('.suggestions-dropdown');
+                if (dropdown) dropdown.classList.remove('visible');
+            });
+        }
+
         async function fetchSuggestions(query) {
-            if (query.length < 2) return [];
+            if (query.length < 3) return [];
             const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=6&addressdetails=1`;
             const resp = await fetch(url, {
                 headers: { 'User-Agent': 'BleibeIchTrocken/1.0' }
@@ -1435,14 +1639,14 @@
             inputEl.addEventListener('input', () => {
                 clearTimeout(suggestTimer);
                 const val = inputEl.value.trim();
-                if (val.length < 2) {
+                if (val.length < 3) {
                     dropdownEl.classList.remove('visible');
                     return;
                 }
                 suggestTimer = setTimeout(async () => {
                     const data = await fetchSuggestions(val);
                     renderSuggestions(inputEl, dropdownEl, data);
-                }, 250);
+                }, 300);
             });
 
             inputEl.addEventListener('focus', () => {
@@ -1488,6 +1692,10 @@
         // Autocomplete für beide Felder aktivieren
         setupAutocomplete(DOM.start, DOM.startSuggestions);
         setupAutocomplete(DOM.ziel, DOM.zielSuggestions);
+
+        // Smart Clear für beide Felder aktivieren
+        setupSmartClear(DOM.start);
+        setupSmartClear(DOM.ziel);
 
         // Dropdown schließen bei Klick außerhalb
         document.addEventListener('click', (e) => {
