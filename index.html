@@ -213,6 +213,11 @@
             padding-right: 46px;
         }
 
+        /* Dropdown über benachbarte Felder legen */
+        .autocomplete-wrapper:has(.suggestions-dropdown.visible) {
+            z-index: 200;
+        }
+
         .swap-btn {
             position: absolute;
             right: 6px;
@@ -1884,6 +1889,12 @@
          * Extrahiert die Postleitzahl aus einem Nominatim-Ergebnis.
          */
         function extractPLZ(item) {
+            // Photon: postcode direkt in properties
+            if (item.postcode) {
+                const m = String(item.postcode).match(/(\d{5})/);
+                if (m) return m[1];
+            }
+            // Nominatim-Kompatibilität: über address-Objekt
             if (item.address && item.address.postcode) {
                 const m = item.address.postcode.match(/(\d{5})/);
                 if (m) return m[1];
@@ -1896,18 +1907,39 @@
         }
 
         async function fetchSuggestions(query) {
-            if (query.length < 2) return [];
+            if (query.length < 1) return [];
             const cacheKey = query.trim().toLowerCase();
             if (suggestionsCache[cacheKey]) return suggestionsCache[cacheKey];
 
-            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=8&addressdetails=1`;
-            const resp = await fetch(url, {
-                headers: { 'User-Agent': 'BleibeIchTrocken/1.0' }
-            });
+            // Photon (komoot) Autocomplete – besseres Prefix-Matching als Nominatim
+            const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=20&lang=de`;
+            const resp = await fetch(url);
             if (!resp.ok) return [];
             const data = await resp.json();
-            suggestionsCache[cacheKey] = data;
-            return data;
+            const features = data.features || [];
+            // In ein einheitliches Format wie Nominatim umwandeln
+            const results = features.map(f => {
+                const props = f.properties || {};
+                const geo = f.geometry?.coordinates || [0, 0];
+                const typeMap = {
+                    'highway': props.osm_type === 'N' ? 'bus_stop' : props.osm_value || 'road',
+                    'amenity': 'amenity',
+                    'place': props.osm_value || 'place',
+                    'building': 'building',
+                    'railway': 'railway',
+                    'landuse': 'landuse',
+                };
+                return {
+                    display_name: [props.name, props.city || props.locality || '', props.country || ''].filter(Boolean).join(', '),
+                    lat: geo[1] || 0,
+                    lon: geo[0] || 0,
+                    type: typeMap[props.osm_key] || props.osm_key || props.osm_value || 'unknown',
+                    addresstype: props.osm_key || props.osm_value || 'unknown',
+                    address: { postcode: props.postcode || '' },
+                };
+            });
+            suggestionsCache[cacheKey] = results;
+            return results;
         }
 
         function getTypeLabel(item) {
@@ -1933,29 +1965,41 @@
                 dropdownEl.classList.remove('visible');
                 return;
             }
-            // NUR Straßen anzeigen – alles andere raus
-            const streetItems = data.filter(item => {
+            // NUR Straßen (highway) – alles andere rigoros rausfiltern
+            // Photon liefert osm_key='highway' mit osm_value wie residential, primary, secondary, tertiary, track, etc.
+            const strassenTypen = ['street', 'road', 'residential', 'primary', 'secondary',
+                                   'tertiary', 'trunk', 'motorway', 'service', 'living_street',
+                                   'pedestrian', 'footway', 'cycleway', 'path', 'unclassified',
+                                   'house_number', 'track', 'steps', 'bridleway'];
+            let streetItems = data.filter(item => {
                 const type = item.type || item.addresstype || '';
-                const strassenTypen = ['street', 'road', 'residential', 'primary', 'secondary',
-                                       'tertiary', 'trunk', 'motorway', 'service', 'living_street',
-                                       'pedestrian', 'footway', 'cycleway', 'path', 'unclassified',
-                                       'house_number'];
                 return strassenTypen.includes(type);
             });
             if (streetItems.length === 0) {
                 dropdownEl.classList.remove('visible');
                 return;
             }
-            streetItems.forEach(item => {
+            const maxItems = 8;
+            // Deduplizieren: gleicher Straßenname + gleiche Stadt nur einmal anzeigen
+            const seen = new Set();
+            const items = [];
+            for (const item of streetItems) {
+                const streetName = item.display_name.split(',')[0] || item.display_name;
+                const city = (item.display_name.split(',')[1] || '').trim();
+                const key = streetName.toLowerCase() + '|' + city.toLowerCase();
+                if (seen.has(key)) continue;
+                seen.add(key);
+                items.push(item);
+                if (items.length >= maxItems) break;
+            }
+            items.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'suggestion-item';
-                // Nur den Straßennamen (erster Teil vor Komma) anzeigen
                 const streetName = item.display_name.split(',')[0] || item.display_name;
                 const plz = extractPLZ(item);
                 const plzAnzeige = plz ? ` <strong>[${plz}]</strong>` : '';
                 div.innerHTML = `${streetName}${plzAnzeige}`;
                 div.addEventListener('click', () => {
-                    // Beim Klick: Straße + PLZ als Wert setzen
                     inputEl.value = plz ? `${streetName}, ${plz}` : streetName;
                     dropdownEl.classList.remove('visible');
                 });
@@ -1979,15 +2023,13 @@
                     showHistorySuggestions(inputEl, dropdownEl);
                     return;
                 }
-                if (val.length < 2) {
-                    dropdownEl.classList.remove('visible');
-                    return;
-                }
-                // Sehr kurzes Debounce (80ms) für sofortige Reaktion
+                const currentVal = val;
                 debounceTimer = setTimeout(async () => {
-                    const data = await fetchSuggestions(val);
+                    if (inputEl.value.trim() !== currentVal) return;
+                    const data = await fetchSuggestions(currentVal);
+                    if (inputEl.value.trim() !== currentVal) return;
                     renderSuggestions(inputEl, dropdownEl, data);
-                }, 80);
+                }, 150);
             });
 
             inputEl.addEventListener('focus', () => {
@@ -1996,6 +2038,16 @@
                     showHistorySuggestions(inputEl, dropdownEl);
                 } else if (dropdownEl.children.length > 0) {
                     dropdownEl.classList.add('visible');
+                } else if (val.length > 0) {
+                    // Auch bei Fokus: Vorschläge holen, wenn Text da ist
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(async () => {
+                        const currentVal = val;
+                        if (inputEl.value.trim() !== currentVal) return;
+                        const data = await fetchSuggestions(currentVal);
+                        if (inputEl.value.trim() !== currentVal) return;
+                        renderSuggestions(inputEl, dropdownEl, data);
+                    }, 150);
                 }
             });
 
