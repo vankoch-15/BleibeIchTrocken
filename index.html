@@ -209,6 +209,76 @@
             position: relative;
         }
 
+        .autocomplete-wrapper input {
+            padding-right: 46px;
+        }
+
+        .swap-btn {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            color: #90caf9;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, border-color 0.2s, transform 0.2s;
+            outline: none;
+            line-height: 1;
+            padding: 0;
+            z-index: 1;
+        }
+
+        .swap-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        .swap-btn:active {
+            transform: translateY(-50%) rotate(180deg) scale(0.9);
+        }
+
+        .geo-btn {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            color: #90caf9;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, border-color 0.2s, transform 0.2s;
+            outline: none;
+            line-height: 1;
+            padding: 0;
+            z-index: 1;
+        }
+
+        .geo-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .geo-btn:active {
+            transform: translateY(-50%) scale(0.9);
+        }
+
         .suggestions-dropdown {
             position: absolute;
             top: calc(100% + 4px);
@@ -254,6 +324,13 @@
             text-transform: uppercase;
             letter-spacing: 0.03em;
             font-weight: 600;
+        }
+
+        .suggestion-item strong {
+            color: #e65100;
+            font-weight: 800;
+            font-size: 0.9rem;
+            letter-spacing: 0.02em;
         }
 
         .suggestions-dropdown::-webkit-scrollbar {
@@ -838,6 +915,7 @@
                 <label for="start">Startort</label>
                 <div class="autocomplete-wrapper">
                     <input type="text" id="start" placeholder="z. B. Berlin Hauptbahnhof" value="Berlin Hauptbahnhof" autocomplete="off" />
+                    <button type="button" id="geoBtn" class="geo-btn" title="Aktuellen Standort verwenden">📍</button>
                     <div class="suggestions-dropdown" id="startSuggestions"></div>
                 </div>
             </div>
@@ -845,6 +923,7 @@
                 <label for="ziel">Zielort</label>
                 <div class="autocomplete-wrapper">
                     <input type="text" id="ziel" placeholder="z. B. Brandenburger Tor" value="Brandenburger Tor, Berlin" autocomplete="off" />
+                    <button type="button" id="swapBtn" class="swap-btn" title="Start und Ziel tauschen">⇄</button>
                     <div class="suggestions-dropdown" id="zielSuggestions"></div>
                 </div>
             </div>
@@ -1721,43 +1800,45 @@
         // 7b. Gespeicherte Adressen aus localStorage laden
         // ============================================================
         (function loadSavedLocations() {
+            // defaultValues setzen (für Smart Clear)
+            DOM.start.defaultValue = DOM.start.value;
+            DOM.ziel.defaultValue = DOM.ziel.value;
             const savedStart = localStorage.getItem('startLocation');
             const savedZiel = localStorage.getItem('zielLocation');
             if (savedStart) {
                 DOM.start.value = savedStart;
+                DOM.start.defaultValue = savedStart;
             }
             if (savedZiel) {
                 DOM.ziel.value = savedZiel;
+                DOM.ziel.defaultValue = savedZiel;
             }
         })();
 
         // ============================================================
-        // 8. Autocomplete / Suggestions + Smart Clear
+        // 8. Autocomplete / Suggestions – optimiert (schnell + PLZ)
         // ============================================================
 
-        let suggestTimer = null;
+        // Cache für Suggestions – Key = normalisierte Suchanfrage
+        const suggestionsCache = {};
 
-        // Smart Clear: Leert das Feld beim ersten Fokus, wenn der Nutzer neu tippen will.
-        // Wir merken uns, ob das Feld schonmal "gesmartcleart" wurde.
-        // Nur aktiv, wenn kein gespeicherter Wert geladen wurde (sonst würde er gelöscht).
-        const smartClearState = {};
-
+        // Smart Clear: Leert das Feld bei jedem Fokus (auch bei gespeicherten Werten)
         function setupSmartClear(inputEl) {
-            // Nur Smart Clear aktivieren, wenn kein gespeicherter Wert existiert
-            const saved = localStorage.getItem(inputEl.id + 'Location');
-            if (saved && saved.trim()) {
-                // Gespeicherten Wert nicht löschen – Smart Clear deaktiviert
-                return;
-            }
-
-            inputEl.addEventListener('focus', function onFirstFocus() {
-                // Nur beim ersten Fokus leeren, nicht bei jedem
-                if (smartClearState[inputEl.id]) return;
-                smartClearState[inputEl.id] = true;
-                inputEl.value = '';
-                // Dropdown verstecken, falls offen
+            inputEl.addEventListener('focus', function onFocus() {
+                // Nur leeren, wenn ein Platzhalter-Wert (Default) drin steht
+                const placeholder = inputEl.placeholder;
+                const defaultValue = inputEl.defaultValue;
+                // Bei erstem Fokus: Feld leeren, wenn der aktuelle Wert einem Platzhalter entspricht
+                // oder es das default value ist
+                const val = inputEl.value.trim();
+                if (val === defaultValue || val === placeholder || val === '') {
+                    inputEl.value = '';
+                }
                 const dropdown = inputEl.parentElement.querySelector('.suggestions-dropdown');
-                if (dropdown) dropdown.classList.remove('visible');
+                // History-Vorschläge anzeigen wenn leer
+                if (inputEl.value.trim() === '') {
+                    showHistorySuggestions(inputEl, dropdown);
+                }
             });
         }
 
@@ -1765,31 +1846,20 @@
         // 8b. History-Vorschläge aus localStorage
         // ============================================================
 
-        /**
-         * Liefert die letzten maxCount gespeicherten Adressen aus localStorage,
-         * sortiert nach Aktualität (neueste zuerst).
-         * Berücksichtigt sowohl startLocation als auch zielLocation.
-         */
         function getRecentAddresses(maxCount = 3) {
             const saved = new Set();
             const start = localStorage.getItem('startLocation');
             const ziel = localStorage.getItem('zielLocation');
             if (start && start.trim()) saved.add(start.trim());
             if (ziel && ziel.trim()) saved.add(ziel.trim());
-            // In Zukunft könnten hier weitere Keys ergänzt werden, falls
-            // ein Verlauf mit mehr als 2 Einträgen gewünscht ist.
             return Array.from(saved).slice(0, maxCount);
         }
 
-        /**
-         * Zeigt die History-Vorschläge (letzte Adressen) im Dropdown an.
-         */
         function showHistorySuggestions(inputEl, dropdownEl) {
             const history = getRecentAddresses(3);
             if (history.length === 0) return;
 
             dropdownEl.innerHTML = '';
-            // Überschrift "Zuletzt verwendet"
             const header = document.createElement('div');
             header.style.cssText = 'padding:0.5rem 1rem 0.25rem;font-size:0.7rem;color:#999;text-transform:uppercase;letter-spacing:0.04em;font-weight:600;border-bottom:1px solid #f0f0f0;';
             header.textContent = '⏳ Zuletzt verwendet';
@@ -1798,7 +1868,9 @@
             history.forEach(addr => {
                 const div = document.createElement('div');
                 div.className = 'suggestion-item';
-                div.innerHTML = `${addr} <span class="suggestion-type">Verlauf</span>`;
+                const plzMatch = addr.match(/\b(\d{5})\b/);
+                const plzAnzeige = plzMatch ? ` <strong>[${plzMatch[1]}]</strong>` : '';
+                div.innerHTML = `${addr}${plzAnzeige} <span class="suggestion-type">Verlauf</span>`;
                 div.addEventListener('click', () => {
                     inputEl.value = addr;
                     dropdownEl.classList.remove('visible');
@@ -1808,14 +1880,34 @@
             dropdownEl.classList.add('visible');
         }
 
+        /**
+         * Extrahiert die Postleitzahl aus einem Nominatim-Ergebnis.
+         */
+        function extractPLZ(item) {
+            if (item.address && item.address.postcode) {
+                const m = item.address.postcode.match(/(\d{5})/);
+                if (m) return m[1];
+            }
+            if (item.display_name) {
+                const m = item.display_name.match(/\b(\d{5})\b/);
+                if (m) return m[1];
+            }
+            return null;
+        }
+
         async function fetchSuggestions(query) {
-            if (query.length < 3) return [];
-            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=6&addressdetails=1`;
+            if (query.length < 2) return [];
+            const cacheKey = query.trim().toLowerCase();
+            if (suggestionsCache[cacheKey]) return suggestionsCache[cacheKey];
+
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=8&addressdetails=1`;
             const resp = await fetch(url, {
                 headers: { 'User-Agent': 'BleibeIchTrocken/1.0' }
             });
             if (!resp.ok) return [];
-            return resp.json();
+            const data = await resp.json();
+            suggestionsCache[cacheKey] = data;
+            return data;
         }
 
         function getTypeLabel(item) {
@@ -1841,15 +1933,31 @@
                 dropdownEl.classList.remove('visible');
                 return;
             }
-            data.forEach(item => {
+            // NUR Straßen anzeigen – alles andere raus
+            const streetItems = data.filter(item => {
+                const type = item.type || item.addresstype || '';
+                const strassenTypen = ['street', 'road', 'residential', 'primary', 'secondary',
+                                       'tertiary', 'trunk', 'motorway', 'service', 'living_street',
+                                       'pedestrian', 'footway', 'cycleway', 'path', 'unclassified',
+                                       'house_number'];
+                return strassenTypen.includes(type);
+            });
+            if (streetItems.length === 0) {
+                dropdownEl.classList.remove('visible');
+                return;
+            }
+            streetItems.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'suggestion-item';
-                const display = item.display_name.split(',')[0] || item.display_name;
-                div.innerHTML = `${display} <span class="suggestion-type">${getTypeLabel(item)}</span>`;
+                // Nur den Straßennamen (erster Teil vor Komma) anzeigen
+                const streetName = item.display_name.split(',')[0] || item.display_name;
+                const plz = extractPLZ(item);
+                const plzAnzeige = plz ? ` <strong>[${plz}]</strong>` : '';
+                div.innerHTML = `${streetName}${plzAnzeige}`;
                 div.addEventListener('click', () => {
-                    inputEl.value = item.display_name;
+                    // Beim Klick: Straße + PLZ als Wert setzen
+                    inputEl.value = plz ? `${streetName}, ${plz}` : streetName;
                     dropdownEl.classList.remove('visible');
-                    // Nicht automatisch checken – Nutzer muss erst Ziel eingeben
                 });
                 dropdownEl.appendChild(div);
             });
@@ -1862,37 +1970,36 @@
         }
 
         function setupAutocomplete(inputEl, dropdownEl) {
+            let debounceTimer = null;
+
             inputEl.addEventListener('input', () => {
-                clearTimeout(suggestTimer);
+                clearTimeout(debounceTimer);
                 const val = inputEl.value.trim();
                 if (val.length === 0) {
-                    // Wenn komplett gelöscht → History-Vorschläge zeigen
                     showHistorySuggestions(inputEl, dropdownEl);
                     return;
                 }
-                if (val.length < 3) {
+                if (val.length < 2) {
                     dropdownEl.classList.remove('visible');
                     return;
                 }
-                suggestTimer = setTimeout(async () => {
+                // Sehr kurzes Debounce (80ms) für sofortige Reaktion
+                debounceTimer = setTimeout(async () => {
                     const data = await fetchSuggestions(val);
                     renderSuggestions(inputEl, dropdownEl, data);
-                }, 250);
+                }, 80);
             });
 
             inputEl.addEventListener('focus', () => {
                 const val = inputEl.value.trim();
                 if (val.length === 0) {
-                    // Feld ist leer → History-Vorschläge anzeigen
                     showHistorySuggestions(inputEl, dropdownEl);
                 } else if (dropdownEl.children.length > 0) {
-                    // Bereits Vorschläge vorhanden → Dropdown öffnen
                     dropdownEl.classList.add('visible');
                 }
             });
 
             inputEl.addEventListener('blur', () => {
-                // Verzögert schließen, damit Klick auf Item registriert wird
                 setTimeout(() => dropdownEl.classList.remove('visible'), 200);
             });
 
@@ -1942,6 +2049,64 @@
         // ============================================================
         // 9. Event Listener
         // ============================================================
+
+        // Swap-Button: Start und Ziel tauschen
+        DOM.swapBtn = document.getElementById('swapBtn');
+        DOM.swapBtn.addEventListener('click', () => {
+            const temp = DOM.start.value;
+            DOM.start.value = DOM.ziel.value;
+            DOM.ziel.value = temp;
+            // defaultValues ebenfalls tauschen
+            const tempDefault = DOM.start.defaultValue;
+            DOM.start.defaultValue = DOM.ziel.defaultValue;
+            DOM.ziel.defaultValue = tempDefault;
+            // Gespeicherte Adressen aktualisieren
+            saveCurrentAddresses();
+            // Dropdowns schließen
+            hideAllDropdowns();
+        });
+
+        // Geo-Button: Aktuellen Standort per Reverse Geocoding ermitteln
+        DOM.geoBtn = document.getElementById('geoBtn');
+        DOM.geoBtn.addEventListener('click', async () => {
+            if (!navigator.geolocation) {
+                showError('Geolocation wird von deinem Browser nicht unterstützt.');
+                return;
+            }
+            DOM.geoBtn.classList.add('loading');
+            DOM.geoBtn.textContent = '⏳';
+            try {
+                const pos = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 300000
+                    });
+                });
+                const { latitude, longitude } = pos.coords;
+                // Reverse Geocoding via Nominatim
+                const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`;
+                const resp = await fetch(url, {
+                    headers: { 'User-Agent': 'BleibeIchTrocken/1.0' }
+                });
+                if (!resp.ok) throw new Error('Reverse Geocoding fehlgeschlagen');
+                const data = await resp.json();
+                const adresse = data.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+                DOM.start.value = adresse;
+                DOM.start.defaultValue = adresse;
+                saveCurrentAddresses();
+                hideAllDropdowns();
+            } catch (err) {
+                if (err.code === 1) {
+                    showError('Bitte Standortzugriff erlauben, um den aktuellen Ort zu nutzen.');
+                } else {
+                    showError('Standort konnte nicht ermittelt werden: ' + err.message);
+                }
+            } finally {
+                DOM.geoBtn.classList.remove('loading');
+                DOM.geoBtn.textContent = '📍';
+            }
+        });
         DOM.checkBtn.addEventListener('click', checkWeather);
 
         // Enter-Taste: Start → springt zu Ziel, Ziel → checkt
@@ -1958,10 +2123,7 @@
             }
         });
 
-        // Auto-Check beim Laden (Startbeispiel)
-        window.addEventListener('load', () => {
-            setTimeout(checkWeather, 300);
-        });
+        // Auto-Check beim Laden entfernt – Seite startet ruhig, kein Sprung nach unten
     </script>
 </body>
 </html>
