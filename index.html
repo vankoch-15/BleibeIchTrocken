@@ -13,8 +13,14 @@
     <!-- Apple Touch Icon – wird per JavaScript als PNG aus Canvas generiert -->
     <link rel="apple-touch-icon" sizes="180x180" id="appleTouchIcon" href="" />
 
-    <!-- Safari-Theme-Farbe (Statusleiste) -->
-    <meta name="theme-color" content="#1a237e" />
+    <!-- Safari-Theme-Farbe (Statusleiste) – dunkel + hell -->
+    <meta name="theme-color" content="#1a237e" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+
+    <!-- Preconnect für externe APIs -->
+    <link rel="preconnect" href="https://nominatim.openstreetmap.org" />
+    <link rel="preconnect" href="https://photon.komoot.io" />
+    <link rel="preconnect" href="https://api.open-meteo.com" />
 
     <!-- Apple Touch Icon als echtes PNG via Canvas generieren (iOS-kompatibel) -->
     <script>
@@ -124,6 +130,44 @@
     </script>
 
     <style>
+        :root {
+            /* Primärfarben */
+            --primary-dark: #0c1445;
+            --primary-mid: #1a237e;
+            --primary-light: #283593;
+            --accent: #42a5f5;
+            --accent-dark: #1e88e5;
+
+            /* Textfarben */
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0bec5;
+            --text-muted: #78909c;
+            --text-label: #90caf9;
+
+            /* Regen-Level (Semantik) */
+            --dry: #66bb6a;
+            --light-rain: #ffd54f;
+            --moderate-rain: #ffb74d;
+            --heavy-rain: #ef5350;
+
+            /* Hintergründe */
+            --bg-card: rgba(255, 255, 255, 0.08);
+            --bg-input: rgba(255, 255, 255, 0.1);
+            --border-color: rgba(255, 255, 255, 0.12);
+
+            /* Shadows */
+            --shadow-sm: 0 0 20px rgba(102, 187, 106, 0.15);
+            --shadow-md: 0 6px 20px rgba(66, 165, 245, 0.4);
+
+            /* Layout */
+            --radius: 10px;
+            --radius-card: 16px;
+            --radius-lg: 12px;
+
+            /* Font */
+            --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -138,11 +182,11 @@
         }
 
         html {
-            background: linear-gradient(135deg, #0c1445 0%, #1a237e 50%, #283593 100%);
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-mid) 50%, var(--primary-light) 100%);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            font-family: var(--font);
             background: transparent;
             min-height: 100dvh;
             display: flex;
@@ -151,10 +195,72 @@
             padding: 2rem 1rem;
             padding-top: calc(env(safe-area-inset-top, 0px) + 1rem);
             padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
-            color: #e0e0e0;
+            color: var(--text-primary);
             touch-action: manipulation;
             -webkit-user-select: none;
             user-select: none;
+        }
+
+        /* Sanfter Light-Mode für Leute mit heller System-Einstellung */
+        @media (prefers-color-scheme: light) {
+            :root {
+                --primary-dark: #e8eaf6;
+                --primary-mid: #c5cae9;
+                --primary-light: #9fa8da;
+                --text-primary: #1a1a2e;
+                --text-secondary: #455a64;
+                --text-muted: #607d8b;
+                --text-label: #3949ab;
+                --bg-card: rgba(255, 255, 255, 0.6);
+                --bg-input: rgba(255, 255, 255, 0.5);
+                --border-color: rgba(0, 0, 0, 0.12);
+            }
+            html {
+                background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 50%, #9fa8da 100%);
+            }
+            input, select {
+                color: #1a1a2e;
+                background: rgba(255, 255, 255, 0.6);
+                border-color: rgba(0, 0, 0, 0.2);
+            }
+            input::placeholder {
+                color: rgba(0, 0, 0, 0.35);
+            }
+            input:focus, select:focus {
+                border-color: var(--accent);
+                box-shadow: 0 0 0 3px rgba(66, 165, 245, 0.25);
+            }
+            .card {
+                background: var(--bg-card);
+                border-color: rgba(0, 0, 0, 0.12);
+                backdrop-filter: blur(16px);
+            }
+            .detail-item .value {
+                color: #1a1a2e;
+            }
+            .detail-item .label {
+                color: var(--text-muted);
+            }
+            .timeline-point .point-time {
+                color: var(--text-muted);
+            }
+            .timeline-point .point-weather {
+                color: var(--text-secondary);
+            }
+        }
+
+        /* Respektiert "Bewegung reduzieren"-Einstellung */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            .verdict.level-heavy {
+                animation: none;
+            }
         }
 
         /* Selektierbare Elemente wieder aktivieren */
@@ -173,7 +279,7 @@
             font-size: 2.2rem;
             font-weight: 700;
             margin-bottom: 0.25rem;
-            background: linear-gradient(135deg, #64b5f6, #42a5f5, #1e88e5);
+            background: linear-gradient(135deg, #64b5f6, var(--accent), var(--accent-dark));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -181,17 +287,18 @@
 
         .subtitle {
             text-align: center;
-            color: #90caf9;
+            color: var(--text-label);
             font-size: 0.95rem;
             margin-bottom: 2rem;
             opacity: 0.8;
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--bg-card);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 16px;
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
             padding: 1.5rem;
             margin-bottom: 1.5rem;
         }
@@ -228,13 +335,13 @@
             border-radius: 50%;
             border: 1px solid rgba(255, 255, 255, 0.2);
             background: rgba(255, 255, 255, 0.08);
-            color: #90caf9;
+            color: var(--text-label);
             font-size: 1.1rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s, border-color 0.2s, transform 0.2s;
+            transition: background 0.2s, border-color 0.2s, transform 0.2s, opacity 0.2s;
             outline: none;
             line-height: 1;
             padding: 0;
@@ -261,13 +368,13 @@
             border-radius: 50%;
             border: 1px solid rgba(255, 255, 255, 0.2);
             background: rgba(255, 255, 255, 0.08);
-            color: #90caf9;
+            color: var(--text-label);
             font-size: 1.1rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s, border-color 0.2s, transform 0.2s;
+            transition: background 0.2s, border-color 0.2s, transform 0.2s, opacity 0.2s;
             outline: none;
             line-height: 1;
             padding: 0;
@@ -282,6 +389,16 @@
 
         .geo-btn:active {
             transform: translateY(-50%) scale(0.9);
+        }
+
+        .geo-btn.loading {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .geo-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .suggestions-dropdown {
@@ -357,20 +474,23 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            color: #90caf9;
+            color: var(--text-label);
             margin-bottom: 0.4rem;
         }
 
         input, select {
             width: 100%;
             padding: 0.75rem 1rem;
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--bg-input);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
+            border-radius: var(--radius);
             color: #fff;
             font-size: 1rem;
             transition: border-color 0.2s, box-shadow 0.2s;
             outline: none;
+            outline-offset: 2px;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         input::placeholder {
@@ -378,8 +498,19 @@
         }
 
         input:focus, select:focus {
-            border-color: #42a5f5;
+            border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(66, 165, 245, 0.25);
+        }
+
+        /* Verbesserte Fokus-Ringe für Tastatur-User */
+        input:focus-visible,
+        select:focus-visible,
+        .toggle-btn:focus-visible,
+        .btn:focus-visible,
+        .swap-btn:focus-visible,
+        .geo-btn:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
         }
 
         .toggle-group {
@@ -390,9 +521,9 @@
         .toggle-btn {
             flex: 1;
             padding: 0.75rem 1rem;
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--bg-input);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
+            border-radius: var(--radius);
             color: rgba(255, 255, 255, 0.7);
             font-size: 0.95rem;
             cursor: pointer;
@@ -408,29 +539,29 @@
         }
 
         .toggle-btn.active {
-            background: #007bff;
-            border-color: #007bff;
+            background: var(--accent);
+            border-color: var(--accent);
             color: #fff;
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+            box-shadow: 0 0 0 3px rgba(66, 165, 245, 0.3);
         }
 
         .btn {
             width: 100%;
             padding: 0.85rem;
-            background: linear-gradient(135deg, #42a5f5, #1e88e5);
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
             border: none;
-            border-radius: 10px;
+            border-radius: var(--radius);
             color: #fff;
             font-size: 1.1rem;
             font-weight: 700;
             cursor: pointer;
-            transition: transform 0.15s, box-shadow 0.2s;
+            transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
             letter-spacing: 0.02em;
         }
 
         .btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(66, 165, 245, 0.4);
+            box-shadow: var(--shadow-md);
         }
 
         .btn:active {
@@ -441,6 +572,7 @@
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
 
         .result-card {
@@ -462,25 +594,25 @@
 
         .verdict.level-dry {
             background: rgba(102, 187, 106, 0.2);
-            color: #66bb6a;
+            color: var(--dry);
             box-shadow: 0 0 20px rgba(102, 187, 106, 0.15);
         }
 
         .verdict.level-light {
             background: rgba(255, 193, 7, 0.2);
-            color: #ffd54f;
+            color: var(--light-rain);
             box-shadow: 0 0 20px rgba(255, 193, 7, 0.15);
         }
 
         .verdict.level-moderate {
             background: rgba(255, 152, 0, 0.2);
-            color: #ffb74d;
+            color: var(--moderate-rain);
             box-shadow: 0 0 20px rgba(255, 152, 0, 0.15);
         }
 
         .verdict.level-heavy {
             background: rgba(239, 83, 80, 0.2);
-            color: #ef5350;
+            color: var(--heavy-rain);
             box-shadow: 0 0 20px rgba(239, 83, 80, 0.2);
             animation: pulse 1.5s ease-in-out infinite;
         }
@@ -494,7 +626,7 @@
             text-align: center;
             font-size: 0.95rem;
             margin-bottom: 1rem;
-            color: #b0bec5;
+            color: var(--text-secondary);
         }
 
         .timeline {
@@ -513,9 +645,10 @@
 
         .timeline-fill {
             height: 100%;
-            background: linear-gradient(90deg, #66bb6a, #ffa726, #ef5350);
+            background: linear-gradient(90deg, var(--dry), var(--moderate-rain), var(--heavy-rain));
             border-radius: 3px;
             transition: width 0.6s ease;
+            will-change: width;
             width: 0%;
         }
 
@@ -545,25 +678,25 @@
         }
 
         .point-dot.dry {
-            border-color: #66bb6a;
-            background: #66bb6a;
+            border-color: var(--dry);
+            background: var(--dry);
         }
 
         .point-dot.light {
-            border-color: #ffd54f;
-            background: #ffd54f;
+            border-color: var(--light-rain);
+            background: var(--light-rain);
             box-shadow: 0 0 10px rgba(255, 193, 7, 0.4);
         }
 
         .point-dot.moderate {
-            border-color: #ffb74d;
-            background: #ffb74d;
+            border-color: var(--moderate-rain);
+            background: var(--moderate-rain);
             box-shadow: 0 0 10px rgba(255, 152, 0, 0.4);
         }
 
         .point-dot.heavy {
-            border-color: #ef5350;
-            background: #ef5350;
+            border-color: var(--heavy-rain);
+            background: var(--heavy-rain);
             box-shadow: 0 0 12px rgba(239, 83, 80, 0.6);
         }
 
@@ -854,10 +987,10 @@
             display: inline-block;
             width: 36px;
             height: 36px;
-            border: 4px solid rgba(255, 255, 255, 0.15);
-            border-top-color: #42a5f5;
+            border: 4px solid rgba(255, 255, 255, 0.12);
+            border-top-color: var(--accent);
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            animation: spin 0.75s cubic-bezier(0.4, 0.0, 0.2, 1) infinite;
         }
 
         @keyframes spin {
@@ -906,6 +1039,132 @@
             .details-grid {
                 grid-template-columns: 1fr 1fr;
             }
+            .slot-timeline {
+                flex-wrap: wrap;
+            }
+            .slot-item {
+                min-width: calc(50% - 0.5rem);
+                flex: 1 1 auto;
+            }
+            .bonus-stats {
+                gap: 1rem;
+                flex-wrap: wrap;
+            }
+            .wind-meta {
+                flex-wrap: wrap;
+                gap: 0.6rem;
+            }
+        }
+
+        /* ========== Print-Styles ========== */
+        @media print {
+            html {
+                background: #fff !important;
+                font-size: 11pt;
+            }
+            body {
+                color: #222 !important;
+                padding: 0.5in !important;
+                background: #fff !important;
+                user-select: text !important;
+                -webkit-user-select: text !important;
+            }
+            .card {
+                background: #f8f9fa !important;
+                border: 1px solid #dee2e6 !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                break-inside: avoid;
+            }
+            h1 {
+                -webkit-text-fill-color: #1a237e !important;
+                color: #1a237e !important;
+                background: none !important;
+            }
+            .subtitle {
+                color: #555 !important;
+            }
+            .btn, .toggle-btn, .swap-btn, .geo-btn {
+                display: none !important;
+            }
+            input, select {
+                border: 1px solid #ccc !important;
+                background: #fff !important;
+                color: #222 !important;
+            }
+            .loading {
+                display: none !important;
+            }
+            .suggestions-dropdown {
+                display: none !important;
+            }
+            .result-card {
+                display: block !important;
+            }
+            .verdict {
+                color: #222 !important;
+                box-shadow: none !important;
+                animation: none !important;
+            }
+            .verdict.level-dry {
+                background: #e8f5e9 !important;
+                color: #2e7d32 !important;
+            }
+            .verdict.level-light {
+                background: #fff8e1 !important;
+                color: #f57f17 !important;
+            }
+            .verdict.level-moderate {
+                background: #fff3e0 !important;
+                color: #e65100 !important;
+            }
+            .verdict.level-heavy {
+                background: #ffebee !important;
+                color: #c62828 !important;
+                animation: none !important;
+            }
+            .point-dot {
+                background: #fff !important;
+            }
+            .point-dot.dry {
+                border-color: #2e7d32 !important;
+                background: #2e7d32 !important;
+            }
+            .point-dot.light {
+                border-color: #f57f17 !important;
+                background: #f57f17 !important;
+            }
+            .point-dot.moderate {
+                border-color: #e65100 !important;
+                background: #e65100 !important;
+            }
+            .point-dot.heavy {
+                border-color: #c62828 !important;
+                background: #c62828 !important;
+            }
+            .detail-item .value {
+                color: #222 !important;
+            }
+            .slot-item.slot-best {
+                border-color: #f57f17 !important;
+                box-shadow: none !important;
+            }
+            .bonus-section {
+                border-color: #2e7d32 !important;
+                background: #e8f5e9 !important;
+            }
+            .bonus-content {
+                color: #333 !important;
+            }
+            .bonus-header {
+                color: #2e7d32 !important;
+            }
+            .bonus-stat .stat-value {
+                color: #2e7d32 !important;
+            }
+            .wind-section {
+                border-color: #ccc !important;
+            }
         }
     </style>
 </head>
@@ -915,67 +1174,67 @@
         <p class="subtitle">Finde heraus, ob dich unterwegs Regen erwischt</p>
 
         <!-- Eingabe -->
-        <div class="card">
+        <div class="card" role="search" aria-label="Wetter-Check-Formular">
             <div class="form-group">
                 <label for="start">Startort</label>
-                <div class="autocomplete-wrapper">
-                    <input type="text" id="start" placeholder="z. B. Berlin Hauptbahnhof" value="Berlin Hauptbahnhof" autocomplete="off" />
-                    <button type="button" id="geoBtn" class="geo-btn" title="Aktuellen Standort verwenden">📍</button>
-                    <div class="suggestions-dropdown" id="startSuggestions"></div>
+                <div class="autocomplete-wrapper" role="combobox" aria-expanded="false" aria-haspopup="listbox">
+                    <input type="text" id="start" placeholder="z. B. Berlin Hauptbahnhof" value="Berlin Hauptbahnhof" autocomplete="off" aria-autocomplete="list" aria-controls="startSuggestions" aria-expanded="false" />
+                    <button type="button" id="geoBtn" class="geo-btn" title="Aktuellen Standort verwenden" aria-label="Aktuellen Standort ermitteln">📍</button>
+                    <div class="suggestions-dropdown" id="startSuggestions" role="listbox" aria-label="Adressvorschläge"></div>
                 </div>
             </div>
             <div class="form-group">
                 <label for="ziel">Zielort</label>
-                <div class="autocomplete-wrapper">
-                    <input type="text" id="ziel" placeholder="z. B. Brandenburger Tor" value="Brandenburger Tor, Berlin" autocomplete="off" />
-                    <button type="button" id="swapBtn" class="swap-btn" title="Start und Ziel tauschen">⇄</button>
-                    <div class="suggestions-dropdown" id="zielSuggestions"></div>
+                <div class="autocomplete-wrapper" role="combobox" aria-expanded="false" aria-haspopup="listbox">
+                    <input type="text" id="ziel" placeholder="z. B. Brandenburger Tor" value="Brandenburger Tor, Berlin" autocomplete="off" aria-autocomplete="list" aria-controls="zielSuggestions" aria-expanded="false" />
+                    <button type="button" id="swapBtn" class="swap-btn" title="Start und Ziel tauschen" aria-label="Start und Ziel tauschen">⇄</button>
+                    <div class="suggestions-dropdown" id="zielSuggestions" role="listbox" aria-label="Adressvorschläge"></div>
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group" role="radiogroup" aria-label="Verkehrsmittel auswählen">
                 <label>Verkehrsmittel</label>
                 <div class="toggle-group">
-                    <button type="button" class="toggle-btn active" data-mode="walking" data-speed="5">
+                    <button type="button" class="toggle-btn active" data-mode="walking" data-speed="5" role="radio" aria-checked="true" tabindex="0">
                         🚶 Gehen (ca. 5 km/h)
                     </button>
-                    <button type="button" class="toggle-btn" data-mode="bicycle" data-speed="15">
+                    <button type="button" class="toggle-btn" data-mode="bicycle" data-speed="15" role="radio" aria-checked="false" tabindex="-1">
                         🚴 Fahrrad (ca. 15 km/h)
                     </button>
                 </div>
             </div>
-            <button class="btn" id="checkBtn">🌧️ Checken – Bleibe ich trocken?</button>
-            <div class="error-msg" id="errorMsg"></div>
+            <button class="btn" id="checkBtn" aria-label="Wetter checken">🌧️ Checken – Bleibe ich trocken?</button>
+            <div class="error-msg" id="errorMsg" role="alert" aria-live="polite"></div>
         </div>
 
         <!-- Loading -->
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
+        <div class="loading" id="loading" role="status" aria-live="polite">
+            <div class="spinner" aria-hidden="true"></div>
             <div class="loading-text">Berechne Route und checke Wetter...</div>
         </div>
 
         <!-- Ergebnis -->
-        <div class="card result-card" id="resultCard">
-            <div class="verdict" id="verdict"></div>
+        <div class="card result-card" id="resultCard" aria-live="polite" aria-atomic="true">
+            <div class="verdict" id="verdict" role="alert"></div>
             <div class="sub-verdict" id="subVerdict"></div>
 
-            <div class="timeline">
-                <div class="timeline-track">
+            <div class="timeline" aria-label="Regen-Vorhersage entlang der Route">
+                <div class="timeline-track" aria-hidden="true">
                     <div class="timeline-fill" id="timelineFill"></div>
                 </div>
-                <div class="timeline-points" id="timelinePoints"></div>
+                <div class="timeline-points" id="timelinePoints" role="list"></div>
             </div>
 
             <div class="details-grid" id="detailsGrid"></div>
 
             <div class="slot-section" id="slotSection">
                 <div class="slot-section-title">⏰ Optimaler Startzeitpunkt</div>
-                <div class="slot-timeline" id="slotTimeline"></div>
-                <div class="slot-recommendation" id="slotRecommendation"></div>
+                <div class="slot-timeline" id="slotTimeline" role="list"></div>
+                <div class="slot-recommendation" id="slotRecommendation" aria-live="polite"></div>
             </div>
 
             <div class="wind-section" id="windSection" style="display:none;">
                 <div class="wind-header">
-                    <span class="wind-icon">🌬️</span>
+                    <span class="wind-icon" aria-hidden="true">🌬️</span>
                     <span>Fahrrad-Komfort-Index</span>
                 </div>
                 <div class="wind-feedback" id="windFeedback"></div>
@@ -1027,6 +1286,9 @@
         let currentMode = 'walking';
         let currentSpeed = 5;
 
+        // AbortController für abgebrochene API-Requests
+        let activeController = null;
+
         // ============================================================
         // 1. Geocoding via Nominatim + Cache
         // ============================================================
@@ -1044,7 +1306,7 @@
             return address.trim().toLowerCase().replace(/\s+/g, ' ');
         }
 
-        async function geocode(address) {
+        async function geocode(address, signal) {
             const key = normalizeAddress(address);
 
             // 1. Cache-Check: sofort zurückgeben, falls bereits vorhanden
@@ -1055,7 +1317,8 @@
             // 2. Netzwerk-Anfrage (nur bei Cache-Miss)
             const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
             const resp = await fetch(url, {
-                headers: { 'User-Agent': 'BleibeIchTrocken/1.0' }
+                headers: { 'User-Agent': 'BleibeIchTrocken/1.0' },
+                signal,
             });
             if (!resp.ok) throw new Error(`Nominatim-Fehler: ${resp.status}`);
             const data = await resp.json();
@@ -1076,7 +1339,7 @@
         // ============================================================
         // 2. Open-Meteo Wetter + Wind-Daten
         // ============================================================
-        async function fetchWeather(lat, lon) {
+        async function fetchWeather(lat, lon, signal) {
             const params = new URLSearchParams({
                 latitude: lat,
                 longitude: lon,
@@ -1086,7 +1349,7 @@
             });
 
             const url = `https://api.open-meteo.com/v1/forecast?${params}`;
-            const resp = await fetch(url);
+            const resp = await fetch(url, { signal });
             if (!resp.ok) throw new Error(`Open-Meteo-Fehler: ${resp.status}`);
             const data = await resp.json();
 
@@ -1276,11 +1539,12 @@
 
             section.style.display = 'block';
 
-            // Haupt-Content-Zeile
+            // Haupt-Content-Zeile – kompakter, kürzerer Text
+            const co2Str = bonus.co2Kg.toFixed(2);
+            const kcalStr = bonus.kcal.toLocaleString('de-DE');
             contentEl.innerHTML = `
-                ${motivationText} Wenn du den <b>${modeLabel}</b> nimmst, sparst du heute
-                <span class="bonus-highlight">${bonus.co2Kg.toFixed(2)} kg CO₂</span>
-                🌱 und verbrennst <span class="bonus-highlight">${bonus.kcal.toLocaleString('de-DE')} kcal</span> 🔥.
+                ${motivationText}<br>
+                <span class="bonus-highlight">${co2Str} kg CO₂</span> 🌱 gespart · <span class="bonus-highlight">${kcalStr} kcal</span> 🔥 verbrannt
             `;
 
             // Stat-Kacheln
@@ -1380,6 +1644,13 @@
         // 5. Hauptlogik
         // ============================================================
         async function checkWeather() {
+            // Vorherige Requests abbrechen
+            if (activeController) {
+                activeController.abort();
+            }
+            activeController = new AbortController();
+            const signal = activeController.signal;
+
             const startStr = DOM.start.value.trim();
             const zielStr = DOM.ziel.value.trim();
             const mode = currentMode;
@@ -1400,8 +1671,8 @@
             try {
                 // 5a. Geocoding
                 const [startGeo, zielGeo] = await Promise.all([
-                    geocode(startStr),
-                    geocode(zielStr),
+                    geocode(startStr, signal),
+                    geocode(zielStr, signal),
                 ]);
 
                 // 5b. Distanz & Dauer
@@ -1418,9 +1689,9 @@
 
                 // 5d. Wetterdaten für alle 3 Koordinaten laden (einmalig pro Koordinate)
                 const [startWeather, midWeather, endWeather] = await Promise.all([
-                    fetchWeather(points[0].lat, points[0].lon),
-                    fetchWeather(points[1].lat, points[1].lon),
-                    fetchWeather(points[2].lat, points[2].lon),
+                    fetchWeather(points[0].lat, points[0].lon, signal),
+                    fetchWeather(points[1].lat, points[1].lon, signal),
+                    fetchWeather(points[2].lat, points[2].lon, signal),
                 ]);
 
                 // Wind-Daten aus dem Start-Wetter extrahieren
@@ -1488,10 +1759,13 @@
                 renderResult(slotResults[0].points, slotResults[0].worst, distKm, totalMinutes, mode, startGeo, zielGeo, slotResults, bestSlot, windAnalysis);
 
             } catch (err) {
+                // Abgebrochene Requests ignorieren
+                if (err.name === 'AbortError') return;
                 showError(err.message);
             } finally {
                 DOM.loading.classList.remove('visible');
                 DOM.checkBtn.disabled = false;
+                activeController = null;
             }
         }
 
@@ -1773,9 +2047,15 @@
 
         function setMode(btn) {
             // Alle deaktivieren
-            DOM.toggleBtns.forEach(b => b.classList.remove('active'));
+            DOM.toggleBtns.forEach(b => {
+                b.classList.remove('active');
+                b.setAttribute('aria-checked', 'false');
+                b.setAttribute('tabindex', '-1');
+            });
             // Ausgewählten aktivieren
             btn.classList.add('active');
+            btn.setAttribute('aria-checked', 'true');
+            btn.setAttribute('tabindex', '0');
             // Globale Variablen setzen
             currentMode = btn.dataset.mode;
             currentSpeed = parseFloat(btn.dataset.speed);
@@ -1827,20 +2107,16 @@
         // Cache für Suggestions – Key = normalisierte Suchanfrage
         const suggestionsCache = {};
 
-        // Smart Clear: Leert das Feld bei jedem Fokus (auch bei gespeicherten Werten)
+        // Smart Clear: Leert das Feld bei Fokus, wenn es den Default-Wert enthält
         function setupSmartClear(inputEl) {
             inputEl.addEventListener('focus', function onFocus() {
-                // Nur leeren, wenn ein Platzhalter-Wert (Default) drin steht
                 const placeholder = inputEl.placeholder;
                 const defaultValue = inputEl.defaultValue;
-                // Bei erstem Fokus: Feld leeren, wenn der aktuelle Wert einem Platzhalter entspricht
-                // oder es das default value ist
                 const val = inputEl.value.trim();
                 if (val === defaultValue || val === placeholder || val === '') {
                     inputEl.value = '';
                 }
                 const dropdown = inputEl.parentElement.querySelector('.suggestions-dropdown');
-                // History-Vorschläge anzeigen wenn leer
                 if (inputEl.value.trim() === '') {
                     showHistorySuggestions(inputEl, dropdown);
                 }
@@ -1906,14 +2182,14 @@
             return null;
         }
 
-        async function fetchSuggestions(query) {
+        async function fetchSuggestions(query, signal) {
             if (query.length < 1) return [];
             const cacheKey = query.trim().toLowerCase();
             if (suggestionsCache[cacheKey]) return suggestionsCache[cacheKey];
 
             // Photon (komoot) Autocomplete – besseres Prefix-Matching als Nominatim
             const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=20&lang=de`;
-            const resp = await fetch(url);
+            const resp = await fetch(url, { signal });
             if (!resp.ok) return [];
             const data = await resp.json();
             const features = data.features || [];
@@ -2039,7 +2315,6 @@
                 } else if (dropdownEl.children.length > 0) {
                     dropdownEl.classList.add('visible');
                 } else if (val.length > 0) {
-                    // Auch bei Fokus: Vorschläge holen, wenn Text da ist
                     clearTimeout(debounceTimer);
                     debounceTimer = setTimeout(async () => {
                         const currentVal = val;
@@ -2125,8 +2400,20 @@
                 showError('Geolocation wird von deinem Browser nicht unterstützt.');
                 return;
             }
+
+            // loading-Zustand setzen (CSS-Klasse + aria)
             DOM.geoBtn.classList.add('loading');
             DOM.geoBtn.textContent = '⏳';
+            DOM.geoBtn.setAttribute('aria-label', 'Standort wird ermittelt...');
+            DOM.geoBtn.disabled = true;
+
+            // Vorherige Requests abbrechen
+            if (activeController) {
+                activeController.abort();
+            }
+            activeController = new AbortController();
+            const signal = activeController.signal;
+
             try {
                 const pos = await new Promise((resolve, reject) => {
                     navigator.geolocation.getCurrentPosition(resolve, reject, {
@@ -2139,7 +2426,8 @@
                 // Reverse Geocoding via Nominatim
                 const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`;
                 const resp = await fetch(url, {
-                    headers: { 'User-Agent': 'BleibeIchTrocken/1.0' }
+                    headers: { 'User-Agent': 'BleibeIchTrocken/1.0' },
+                    signal,
                 });
                 if (!resp.ok) throw new Error('Reverse Geocoding fehlgeschlagen');
                 const data = await resp.json();
@@ -2149,6 +2437,7 @@
                 saveCurrentAddresses();
                 hideAllDropdowns();
             } catch (err) {
+                if (err.name === 'AbortError') return;
                 if (err.code === 1) {
                     showError('Bitte Standortzugriff erlauben, um den aktuellen Ort zu nutzen.');
                 } else {
@@ -2157,6 +2446,9 @@
             } finally {
                 DOM.geoBtn.classList.remove('loading');
                 DOM.geoBtn.textContent = '📍';
+                DOM.geoBtn.setAttribute('aria-label', 'Aktuellen Standort verwenden');
+                DOM.geoBtn.disabled = false;
+                activeController = null;
             }
         });
         DOM.checkBtn.addEventListener('click', checkWeather);
